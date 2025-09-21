@@ -1,13 +1,15 @@
 from typing import Any
 from lf_toolkit.evaluation import Result, Params
 
+from . import models
+
 def evaluation_function(
     response: Any,
     answer: Any,
     params: Params,
 ) -> Result:
     """
-    Function used to evaluate a student response.
+    Evaluation Function.
     ---
     The handler function passes three arguments to evaluation_function():
 
@@ -29,6 +31,13 @@ def evaluation_function(
     to output the evaluation response.
     """
 
-    return Result(
-        is_correct=response == answer
-    )
+    model_name = getattr(params, "model", "basic_nn")  # default
+    try:
+        model = getattr(models, model_name)   # e.g. models.basic_nn
+    except AttributeError:
+        raise ValueError(f"Unknown model: {model_name}")
+
+    if not hasattr(model, "run"):
+        raise ValueError(f"Model {model_name} has no run()")
+
+    return model.run(response, answer, params)

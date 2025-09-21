@@ -15,8 +15,11 @@ def dev():
     
     answer = sys.argv[1]
     response = sys.argv[2]
+    model = sys.argv[3] if len(sys.argv) > 3 else "basic_nn"
+    refresh = sys.argv[4].lower() == "true" if len(sys.argv) >= 4 else False
+    params = Params(model=model, refresh=refresh)
 
-    result = evaluation_function(answer, response, Params())
+    result = evaluation_function(answer, response, params)
 
     print(result.to_dict())
 
