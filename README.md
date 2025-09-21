@@ -1,51 +1,10 @@
-# Python Evaluation Function
+# landModel 'Evaluation Function'
 
-This repository contains the boilerplate code needed to create a containerized evaluation function written in Python.
+A collection of small Language Models, leading up to LLM-like behaviour and then calling external LLMs. The purpose of the function is to provide interactive learning materials about language models (a.k.a. 'AI'). Primarily designed to interact with [Lambda Feedback](https://www.lambdafeedback.com), the code is public so can be used for other purposes.
 
-## Quickstart
+Code is free to use or adapt, but all liability is with the user and I would appreciate being given credit (Peter B. Johnson, Imperial College London).
 
-This chapter helps you to quickly set up a new Python evaluation function using this template repository.
-
-> [!NOTE]
-> After setting up the evaluation function, delete this chapter from the `README.md` file, and add your own documentation.
-
-#### 1. Create a new repository
-
-- In GitHub, choose `Use this template` > `Create a new repository` in the repository toolbar.
-
-- Choose the owner, and pick a name for the new repository.
-
-  > [!IMPORTANT]
-  > If you want to deploy the evaluation function to Lambda Feedback, make sure to choose the Lambda Feedback organization as the owner.
-
-- Set the visibility to `Public` or `Private`.
-
-  > [!IMPORTANT]
-  > If you want to use GitHub [deployment protection rules](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#deployment-protection-rules), make sure to set the visibility to `Public`.
-
-- Click on `Create repository`.
-
-#### 2. Clone the new repository
-
-Clone the new repository to your local machine using the following command:
-
-```bash
-git clone <repository-url>
-```
-
-#### 3. Configure the evaluation function
-
-When deploying to Lambda Feedback, set the evaluation function name in the `config.json` file. Read the [Deploy to Lambda Feedback](#deploy-to-lambda-feedback) section for more information.
-
-#### 4. Develop the evaluation function
-
-You're ready to start developing your evaluation function. Head over to the [Development](#development) section to learn more.
-
-#### 5. Update the README
-
-In the `README.md` file, change the title and description so it fits the purpose of your evaluation function.
-
-Also, don't forget to delete the Quickstart chapter from the `README.md` file after you've completed these steps.
+For more information on the function, see the `/docs` folder. The remainder of this README is generic guidance, from the boilderplate, about running the function locally when developing.
 
 ## Usage
 
