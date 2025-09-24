@@ -1,0 +1,15 @@
+{
+  "basic_nn": {
+    "answer": "1.0",
+    "response": "1.0",
+    "model": "basic_nn",
+    "refresh": false
+  },
+  "shannon_letters_single": {
+    "answer": "2.0",
+    "response": "3.0",
+    "model": "shannon_letters_single",
+    "uniform": false,
+    "word_count": "random"
+  }
+}
