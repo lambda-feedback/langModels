@@ -9,7 +9,13 @@
     "answer": "2.0",
     "response": "3.0",
     "model": "shannon_letters_single",
-    "uniform": false,
+    "uniform": true,
+    "word_count": "random"
+  },
+  "shannon_letters_ngram": {
+    "answer": "2.0",
+    "response": "3.0",
+    "model": "shannon_letters_ngram",
     "word_count": "random"
   }
 }

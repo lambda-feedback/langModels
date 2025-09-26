@@ -37,7 +37,6 @@ def dev():
     params = Params(**config)
 
     result = evaluation_function(answer, response, params)
-
     print(result.to_dict())
 
 if __name__ == "__main__":
