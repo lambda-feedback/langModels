@@ -22,7 +22,7 @@ class TestEvaluationFunction(unittest.TestCase):
     """
 
     def test_evaluation(self):
-        response, answer, params = "Hello, World", "Hello, World", Params()
+        response, answer, params = 1, 1, Params()
 
         result = evaluation_function(response, answer, params).to_dict()
 
