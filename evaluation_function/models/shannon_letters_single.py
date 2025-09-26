@@ -11,7 +11,7 @@ from lf_toolkit.evaluation import Result, Params
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
-LETTERS_PATH = MODEL_DIR / "norvig_letter_frequencies.csv"
+LETTERS_PATH = MODEL_DIR / "norvig_letter_single.csv"
 WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 
 # Relative Frequencies of Letters in General English Plain text From Cryptographical Mathematics, by Robert Edward Lewand
