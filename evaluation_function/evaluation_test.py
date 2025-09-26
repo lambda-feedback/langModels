@@ -27,4 +27,8 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params).to_dict()
 
         self.assertEqual(result.get("is_correct"), True)
-        self.assertIsInstance(result.get("feedback", [("", "")])[0][1], str)
+        feedback = result.get("feedback", None)
+        if isinstance(feedback, list) and feedback:
+            self.assertIsInstance(feedback[0][1], str)
+        else:
+            self.assertIsInstance(feedback, str)
