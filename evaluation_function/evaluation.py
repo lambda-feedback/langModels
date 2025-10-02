@@ -34,7 +34,7 @@ def evaluation_function(
     #model_name = getattr(params, "model", "basic_nn")  # default
     model_name = params.get("model", "basic_nn") # default
 
-    print(params)
+    print(response, answer, params)
     try:
         model = getattr(models, model_name)   # e.g. models.basic_nn
     except AttributeError:
