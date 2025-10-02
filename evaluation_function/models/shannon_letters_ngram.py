@@ -16,6 +16,8 @@ MODEL_DIR.mkdir(parents=True, exist_ok=True)
 LETTERS_PATH = MODEL_DIR / "norvig_letter_ngrams.csv"
 WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 
+
+
 # Shannon's English lagnuage generator using letter frequency
 
 # Relative Frequencies of Letters in General English Plain text From Cryptographical Mathematics, by Robert Edward Lewand
@@ -54,30 +56,33 @@ def sample_ngram(lookups, n, prefix="", k=1):
     return random.choices(data["keys"], weights=data["freqs"], k=k)
 
 
-def generate_word(n) -> str: # n is the number of letters in the word
+def generate_word(N,n) -> str: # N = max letters, n = context window (as in, n-gram)
     lookups = NGRAM_LOOKUPS
-    n_max=n
+    N_max=N
     samples = {}
     samples[1] = sample_ngram(lookups, n=1, prefix="", k=1)[0]
     print("1-gram:", samples[1]) if printing == 1 else None
-    for i in range(2, n+1):
-        if len(lookups)<=i:             # no i-grams available → stop
-            samples[i] = samples[i-1]+'#'
-            n_max=i
+    for i in range(2, N+1):
+        if len(lookups)<=min(n,i):             
+            samples[i] = samples[i-1]+'#'       # ## no i-grams available → stop
+            N_max=i
             break
-        prefix = samples[i-1]  # previous (i-1)-gram is the prefix
-        if prefix not in lookups[i]:   # missing bucket → stop
+        prefix = samples[i-1][-n+1:]  # previous (i-1)-gram, last n letters
+        if prefix not in lookups[len(prefix)+1]: # $$ missing bucket → stop
             if i>2:
-                samples[i] = samples[i-1]+"#"
-                n_max=i
+                samples[i] = samples[i-1]+"$"  
+                N_max=i
             else:
-                samples[i] = "#"
+                samples[i] = "$"
+                N_max = 1
             break
         else:
-            samples[i] = sample_ngram(lookups, n=i, prefix=prefix, k=1)[0]
+            new = sample_ngram(lookups, n=min(i,n), prefix=prefix, k=1)[0]
+            print(f"i = {i}, N = {N}, n = {n},new string = {new}") if printing == 1 else None
+            samples[i] = samples[i-1][:-n+1]+new
         print(f"{i}-gram:", samples[i]) if printing == 1 else None
 
-    return samples[n_max]
+    return samples[N_max]
 
 def csv_to_lists(filename: str) -> list:
     frequencies = []
@@ -95,11 +100,14 @@ def run(response, answer, params:Params) -> Result:
     word_lengths["tokens"] = [row[0] for row in data]
     word_lengths["weights"] = [row[1] for row in data]
     word_count = params.get("word_count", 10)
+    response_used = isinstance(response, int)
+    context_window = response if response_used else params.get("context_window", 3)
     if word_count == "random":
         word_count = random.randint(3,15)
     for i in range(word_count):
         k=int(random.choices(word_lengths["tokens"],weights=word_lengths["weights"],k=1)[0]) 
-        output.append(generate_word(k))
-    output=' '.join(output)
+        output.append(generate_word(k,context_window))
+    feedback_items = [("general", ' '.join(output))]
+    feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
     is_correct = True
-    return Result(is_correct=is_correct,feedback_items=[("general",output)])
+    return Result(is_correct=is_correct,feedback_items=feedback_items)
