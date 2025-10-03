@@ -19,7 +19,6 @@ Production:
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import matplotlib.pyplot as plt
 
 from lf_toolkit.evaluation import Result, Params
 
