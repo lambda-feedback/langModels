@@ -19,7 +19,7 @@ priority = "explicit"
 python = ">=3.11,<3.14"
 
 #torch = [{ version = "^2.8.0", markers = "sys_platform != 'linux'" }
-torch = { version = "^2.8.0+cpu", markers = "sys_platform == 'linux'", source = "pytorch-cpu" }]
+torch = { version = "^2.8.0+cpu", markers = "sys_platform == 'linux'", source = "pytorch-cpu" }
 
 typing_extensions = "^4.12.2"
 lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", branch = "main", extras = [
