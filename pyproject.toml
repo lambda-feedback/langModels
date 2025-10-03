@@ -11,22 +11,15 @@ evaluation_function = "evaluation_function.main:main"
 evaluation_function_dev = "evaluation_function.dev:dev"
 
 [[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
-
-[[tool.poetry.source]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "explicit"
 
-
-[tool.poetry.dependencies.torch]
-markers = "sys_platform == 'linux'"
-source  = "pytorch-cpu"
-
-
 [tool.poetry.dependencies]
 python = ">=3.11,<3.14"
+
+#torch = [{ version = "^2.8.0", markers = "sys_platform != 'linux'" }
+torch = { version = "^2.8.0+cpu", markers = "sys_platform == 'linux'", source = "pytorch-cpu" }]
 
 typing_extensions = "^4.12.2"
 lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", branch = "main", extras = [
