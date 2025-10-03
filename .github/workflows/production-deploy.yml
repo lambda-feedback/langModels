@@ -94,7 +94,7 @@ jobs:
     with:
       template-repository-name: "lambda-feedback/evaluation-function-boilerplate-python"
       build-platforms: 'aws'
-      environment: "eval-production"
+      environment: "production"
       version-bump: ${{ inputs.version-bump }}
       branch: ${{ inputs.branch }}
     secrets:
