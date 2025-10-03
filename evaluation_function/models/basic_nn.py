@@ -16,20 +16,22 @@ Production:
 
 """
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-
 from lf_toolkit.evaluation import Result, Params
 
 from pathlib import Path
 import os
+
+from evaluation_function.lazy_load import LazyModule
 
 # Setup paths for saving/loading model and data
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_PATH = MODEL_DIR / "basic_nn.pt"
+
+torch = LazyModule("torch")
+nn = LazyModule("torch.nn")
+optim = LazyModule("torch.optim")
 
 def f(x):
     """Target function with noise (sine wave)."""
