@@ -5,6 +5,9 @@ A collection of small Language Models, leading up to LLM-like behaviour and then
 Code is free to use or adapt, but all liability is with the user and I would appreciate being given credit (Peter B. Johnson, Imperial College London).
 
 For more information on the function, see the `/docs` folder. The remainder of this README is generic guidance, from the boilderplate, about running the function locally when developing.
+## Development
+[![Create Release Request](https://img.shields.io/badge/Create%20Release%20Request-blue?style=for-the-badge)](https://github.com/lambda-feedback/langModels/issues/new?template=release-request.yml)
+
 
 ## Usage
 
