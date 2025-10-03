@@ -72,10 +72,8 @@ def train_model(device):
     return model
 
 def run(response, answer, params: Params) -> Result:
-    # print("GPU") if torch.backends.mps.is_available() else print("CPU")
-    # device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-
-    device = "cpu"
+    print("GPU") if torch.backends.mps.is_available() else print("CPU")
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
     refresh = params.get("refresh", False)
     if refresh:
