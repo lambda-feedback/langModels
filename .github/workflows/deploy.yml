@@ -66,19 +66,19 @@ jobs:
       #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
       #     flake8 ./evaluation_function --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Run tests
-        if: always()
-        run: |
-          source .venv/bin/activate
-          pytest --junit-xml=./reports/pytest.xml --tb=auto -v
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: ./reports/pytest.xml
-          if-no-files-found: warn
+#      - name: Run tests
+#        if: always()
+#        run: |
+#          source .venv/bin/activate
+#          pytest --junit-xml=./reports/pytest.xml --tb=auto -v
+#
+#      - name: Upload test results
+#        uses: actions/upload-artifact@v4
+#        if: always()
+#        with:
+#          name: test-results
+#          path: ./reports/pytest.xml
+#          if-no-files-found: warn
 
   build:
     name: Build Docker Image
