@@ -132,4 +132,5 @@ dmypy.json
 .vscode
 
 # Test reports
-reports/
+reports/ngram_counts.pkl
+ngram_counts.pkl

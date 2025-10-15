@@ -13,10 +13,17 @@
     "word_count": "random"
   },
   "shannon_letters_ngram": {
-    "response": "3.0",
-    "answer": 8,
+    "response": 6,
+    "answer": 800,
     "model": "shannon_letters_ngram",
     "word_count": "random",
-    "context_window": 10
+    "context_window": 5
+  },
+  "shannon_words_ngram": {
+    "response": "Going from school",
+    "answer": 2,
+    "model": "shannon_words_ngram",
+    "word_count": 12,
+    "context_window": 4
   }
 }

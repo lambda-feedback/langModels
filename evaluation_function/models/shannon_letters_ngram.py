@@ -3,6 +3,7 @@ import csv
 import os
 from pathlib import Path
 from io import StringIO
+from .utils import csv_to_lists
 import re
 
 from lf_toolkit.evaluation import Result, Params
@@ -15,8 +16,6 @@ MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 LETTERS_PATH = MODEL_DIR / "norvig_letter_ngrams.csv"
 WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
-
-
 
 # Shannon's English lagnuage generator using letter frequency
 
@@ -84,15 +83,6 @@ def generate_word(N,n) -> str: # N = max letters, n = context window (as in, n-g
 
     return samples[N_max]
 
-def csv_to_lists(filename: str) -> list:
-    frequencies = []
-    with open(filename, newline='') as csvfile:
-        reader = csv.reader(csvfile)
-        next(reader)  # Skip header row
-        for key,value in reader:
-            frequencies.append([key, float(value)])
-    return frequencies
-
 def run(response, answer, params:Params) -> Result:
     output=[]
     data = csv_to_lists(WORD_LENGTHS_PATH)
@@ -107,7 +97,8 @@ def run(response, answer, params:Params) -> Result:
     for i in range(word_count):
         k=int(random.choices(word_lengths["tokens"],weights=word_lengths["weights"],k=1)[0]) 
         output.append(generate_word(k,context_window))
-    feedback_items = [("general", ' '.join(output))]
+    preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
+    feedback_items = [("general", preface + ' '.join(output))]
     feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
     is_correct = True
     return Result(is_correct=is_correct,feedback_items=feedback_items)

@@ -31,7 +31,6 @@ def evaluation_function(
     to output the evaluation response.
     """
 
-    #model_name = getattr(params, "model", "basic_nn")  # default
     model_name = params.get("model", "basic_nn") # default
 
     print(response, answer, params)
