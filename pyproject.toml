@@ -19,14 +19,15 @@ priority = "explicit"
 python = ">=3.11,<3.14"
 
 # Uncomment below and comment out cpu if using macOS, the marker feature does not work (at least on my machine) - MM
-torch = { version = "^2.8.0", markers = "sys_platform != 'linux'" }
-#torch = { version = "^2.8.0+cpu", markers = "sys_platform == 'linux'", source = "pytorch-cpu" }
+#torch = { version = "^2.8.0", markers = "sys_platform != 'linux'" }
+torch = { version = "^2.8.0+cpu", markers = "sys_platform == 'linux'", source = "pytorch-cpu" }
 
 typing_extensions = "^4.12.2"
 lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", branch = "main", extras = [
     "ipc",
 ] }
 nltk = "^3.9.2"
+numpy = "^2.3.4"
 
 [tool.poetry.group.overrides.dependencies]
 # Override sympy because lf-toolkit pins sympy==1.12, 
