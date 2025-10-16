@@ -20,10 +20,10 @@
     "context_window": 5
   },
   "shannon_words_ngram": {
-    "response": "Going from school",
+    "response": "the general",
     "answer": 2,
     "model": "shannon_words_ngram",
     "word_count": 12,
-    "context_window": 4
+    "context_window": 3
   }
 }

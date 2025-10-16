@@ -134,3 +134,4 @@ dmypy.json
 # Test reports
 reports/ngram_counts.pkl
 ngram_counts.pkl
+*.pkl

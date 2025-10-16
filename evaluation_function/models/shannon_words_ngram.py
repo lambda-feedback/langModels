@@ -14,7 +14,6 @@ from nltk.corpus import brown, reuters, gutenberg, webtext
 #nltk.download("brown"); nltk.download("reuters"); nltk.download("gutenberg"); nltk.download("webtext")  # CHANGE (one-time)
 
 START, END = "<s>", "</s>"
-FILE = "ngram_counts.pkl"
 
 def corpus_sents():  # CHANGE
     # Each yields lists of tokens already sentence-segmented
@@ -28,6 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
+FILE = MODEL_DIR / "ngram_counts.pkl"
 
 # If not cache:
 def corpus_sents():  # CHANGE
@@ -55,12 +55,16 @@ def get_counts(n=3):
     if os.path.exists(FILE):
         with open(FILE, "rb") as f:
             cache = pickle.load(f)
+        print(len(cache))
     else:
         cache = {}
     if n not in cache:
         cache[n] = build_counts(n)
-        with open(FILE, "wb") as f:
-            pickle.dump(cache, f)
+        try:
+            with open(FILE, "wb") as f:
+                pickle.dump(cache, f)
+        except Exception as e:
+            print(f"Warning: couldn't save n-gram cache to {FILE}: {e}")
     
     counts = cache[n]
     if n == 1:
