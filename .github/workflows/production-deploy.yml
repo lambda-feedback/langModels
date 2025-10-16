@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version-bump:
-        description: 'Version bump type'
+        description: "Version bump type"
         required: true
         type: choice
         options:
@@ -13,10 +13,10 @@ on:
           - major
         default: patch
       branch:
-        description: 'Branch to release from'
+        description: "Branch to release from"
         required: true
         type: string
-        default: 'main'
+        default: "main"
 jobs:
   test:
     name: Test
@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.12" ]
+        python-version: ["3.12"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,10 +90,11 @@ jobs:
           path: ./reports/pytest.xml
           if-no-files-found: warn
   deploy:
+    needs: test
     uses: lambda-feedback/evaluation-function-workflows/.github/workflows/deploy.yml@deploy-request
     with:
       template-repository-name: "lambda-feedback/evaluation-function-boilerplate-python"
-      build-platforms: 'aws'
+      build-platforms: "aws"
       environment: "production"
       version-bump: ${{ inputs.version-bump }}
       branch: ${{ inputs.branch }}
