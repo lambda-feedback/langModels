@@ -55,7 +55,6 @@ def get_counts(n=3):
     if os.path.exists(FILE):
         with open(FILE, "rb") as f:
             cache = pickle.load(f)
-        print(len(cache))
     else:
         cache = {}
     if n not in cache:
@@ -88,9 +87,7 @@ def generate(start="", max_len=20, n=None):
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
     out = start_tokens[:]
     for _ in range(max_len):
-        print(f'next; len(counts): {len(counts)}, ctx: {ctx}')
         w = sample_next(counts, ctx)
-        print(f'w = {w}')
         if w in (None, END):
             out.append('#')
             break
@@ -116,5 +113,4 @@ def run(answer, response, params:Params) -> Result:
     feedback_items = [("general", preface + ' '.join(output))]
     feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
     is_correct = True
-    print(feedback_items)
     return Result(is_correct=is_correct,feedback_items=feedback_items)

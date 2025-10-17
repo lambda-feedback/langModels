@@ -90,7 +90,7 @@ def run(response, answer, params:Params) -> Result:
     word_lengths["tokens"] = [row[0] for row in data]
     word_lengths["weights"] = [row[1] for row in data]
     word_count = params.get("word_count", 10)
-    response_used = isinstance(response, int)
+    response_used = isinstance(response, int) and response > 1
     context_window = response if response_used else params.get("context_window", 3)
     if word_count == "random":
         word_count = random.randint(3,15)
@@ -99,6 +99,6 @@ def run(response, answer, params:Params) -> Result:
         output.append(generate_word(k,context_window))
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
     feedback_items = [("general", preface + ' '.join(output))]
-    feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
+    feedback_items.append("| Answer not an integer >1; used default context window") if not response_used else None
     is_correct = True
     return Result(is_correct=is_correct,feedback_items=feedback_items)

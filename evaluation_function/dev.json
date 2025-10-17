@@ -20,7 +20,7 @@
     "context_window": 5
   },
   "shannon_words_ngram": {
-    "response": "the general",
+    "response": "the general sweetness",
     "answer": 2,
     "model": "shannon_words_ngram",
     "word_count": 12,
