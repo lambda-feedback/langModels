@@ -4,6 +4,7 @@ A simple n-gram (word) Shannon-style language model with add-one smoothing.
 from lf_toolkit.evaluation import Result, Params
 import random, pickle, os
 import os
+import tempfile
 from pathlib import Path
 from io import StringIO
 import re
@@ -27,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
-FILE = MODEL_DIR / "ngram_counts.pkl"
+FILE = Path(tempfile.gettempdir()) / "ngram_counts.pkl"
 
 # If not cache:
 def corpus_sents():  # CHANGE
