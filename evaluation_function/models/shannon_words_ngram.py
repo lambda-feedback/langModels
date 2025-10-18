@@ -1,17 +1,16 @@
 """
 A simple n-gram (word) Shannon-style language model with add-one smoothing.
 """
-from lf_toolkit.evaluation import Result, Params
-import random, pickle, os
-import os
-import tempfile
+import sys, traceback, os
+import random, pickle, tempfile, re
 from pathlib import Path
 from io import StringIO
-import re
+from lf_toolkit.evaluation import Result, Params
 from .utils import csv_to_lists
 import nltk
 from nltk.corpus import brown, reuters, gutenberg, webtext
 
+# Local users run the following once (no need if using Docker):
 #nltk.download("brown"); nltk.download("reuters"); nltk.download("gutenberg"); nltk.download("webtext")  # CHANGE (one-time)
 
 START, END = "<s>", "</s>"
