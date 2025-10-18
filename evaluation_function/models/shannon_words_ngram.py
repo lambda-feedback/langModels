@@ -96,7 +96,7 @@ def generate(start="", max_len=20, n=None):
             ctx = tuple((list(ctx)+[w])[-need:])
     return " ".join(out)
 
-def run(answer, response, params:Params) -> Result:
+def run(response, answer, params:Params) -> Result:
     output=[]
     data = csv_to_lists(WORD_LENGTHS_PATH)
     word_lengths = {}
