@@ -1,66 +1,39 @@
 """
 A simple n-gram (word) Shannon-style language model with add-one smoothing.
 """
-import sys, traceback, os
-import random, pickle, tempfile, re
+import os, random, pickle, bz2, tempfile
 from pathlib import Path
 from io import StringIO
 from lf_toolkit.evaluation import Result, Params
-from .utils import csv_to_lists
-import nltk
-from nltk.corpus import brown, reuters, gutenberg, webtext
+from .utils import csv_to_lists, build_counts
+
 
 # Local users run the following once (no need if using Docker):
 #nltk.download("brown"); nltk.download("reuters"); nltk.download("gutenberg"); nltk.download("webtext")  # CHANGE (one-time)
 
 START, END = "<s>", "</s>"
 
-def corpus_sents():  # CHANGE
-    # Each yields lists of tokens already sentence-segmented
-    for s in brown.sents():      yield s
-    for s in reuters.sents():    yield s
-    for s in gutenberg.sents():  yield s
-    for s in webtext.sents():    yield s
-
 # Setup paths for saving/loading model and data
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
-FILE = Path(tempfile.gettempdir()) / "ngram_counts.pkl"
+# If creating when deployed: 
+#FILE = Path(tempfile.gettempdir()) / "ngram_counts.pkl"
+# If creating locally, to be copied when deployed:
+FILE = MODEL_DIR / "ngram_counts.pkl.bz2"
 
-# If not cache:
-def corpus_sents():  # CHANGE
-    # Each yields lists of tokens already sentence-segmented
-    for s in brown.sents():      yield s
-    for s in reuters.sents():    yield s
-    for s in gutenberg.sents():  yield s
-    for s in webtext.sents():    yield s
-
-def build_counts(n=3):
-    counts = {}
-    for sent in corpus_sents():
-        tokens = [w.lower() for w in sent]
-        s = ([START] * (n - 1)) + tokens + ([END] if n > 1 else [])  
-        for i in range(len(s)-n+1):
-            ctx = tuple(s[i:i+n-1])
-            nxt = s[i+n-1]
-            counts.setdefault(ctx, {})
-            counts[ctx][nxt] = counts[ctx].get(nxt, 0) + 1
-    return counts
-# End caching part
-
-# Always used:
 def get_counts(n=3):
     if os.path.exists(FILE):
-        with open(FILE, "rb") as f:
+        with bz2.BZ2File(FILE, "rb") as f:
             cache = pickle.load(f)
-    else:
+    else: # from here the deployed version will not work because the corpora are not bundled (to save space)
         cache = {}
     if n not in cache:
-        cache[n] = build_counts(n)
+        print(f"Building counts for n={n} (this may take a while)...")
+        cache[n] = build_counts(n, START, END) # similarly, only works if NLTK corpora are available
         try:
-            with open(FILE, "wb") as f:
+            with bz2.BZ2File(FILE, "wb") as f:
                 pickle.dump(cache, f)
         except Exception as e:
             print(f"Warning: couldn't save n-gram cache to {FILE}: {e}")
@@ -111,6 +84,7 @@ def run(response, answer, params:Params) -> Result:
     output.append(generate(context,word_count,context_window))
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
     feedback_items = [("general", preface + ' '.join(output))]
-    feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
+    #feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
     is_correct = True
+    print(feedback_items)
     return Result(is_correct=is_correct,feedback_items=feedback_items)
