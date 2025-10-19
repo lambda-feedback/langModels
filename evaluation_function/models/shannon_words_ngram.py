@@ -10,8 +10,8 @@ from .utils import csv_to_lists, build_counts
 
 import sys, traceback
 def log(msg):
-    sys.stdout.write(msg + "\n")
-    sys.stdout.flush()
+    sys.stderr.write(msg + "\n")
+    sys.stderr.flush()
 
 log(f"[DEBUG] Starting shannon_words_ngram.py")
 
@@ -30,22 +30,24 @@ WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 # If creating locally, to be copied when deployed:
 FILE = MODEL_DIR / "ngram_counts.pkl.bz2"
 
-def get_counts(n=3):
+def get_counts(n=3, dev):
     print(f"Loading/building n-gram counts for n={n}...")
     if os.path.exists(FILE):
-        with bz2.BZ2File(FILE, "rb") as f:
-            cache = pickle.load(f)
-    else: # from here the deployed version will not work because the corpora are not bundled (to save space)
-        cache = {}
-    if n not in cache:
-        print(f"Building counts for n={n} (this may take a while)...")
-        cache[n] = build_counts(n, START, END) # similarly, only works if NLTK corpora are available
         try:
-            with bz2.BZ2File(FILE, "wb") as f:
-                pickle.dump(cache, f)
+            with bz2.BZ2File(FILE, "rb") as f:
+                cache = pickle.load(f)
         except Exception as e:
-            print(f"Warning: couldn't save n-gram cache to {FILE}: {e}")
-    
+            raise RuntimeError(f"Failed to load {FILE}: {e}")        
+    elif dev: # from here the deployed version will not work because the corpora are not bundled (to save space)
+        cache = {}
+        try:
+            cache[n] = build_counts(n, START, END)  # only works if NLTK corpora are available            
+            with bz2.BZ2File(FILE, "rb") as f:
+                cache = pickle.load(f)
+        except Exception as e:
+            raise RuntimeError(f"Failed to rebuild or save n-gram counts: {e}")
+    else:
+        raise FileNotFoundError(f"N-gram counts file not found at {FILE}, and dev mode is off so counts not generated.")    
     counts = cache[n]
     if n == 1:
         counts.setdefault((), {})                 # CHANGE: ensure unigram context exists
@@ -59,10 +61,10 @@ def sample_next(counts, ctx):
     words, freqs = zip(*options.items())
     return random.choices(words, freqs)[0]
 
-def generate(start="", max_len=20, n=None):
+def generate(start="", max_len=20, n=None, dev=False):
     start_tokens = start.lower().split()
     n = max(2, len(start_tokens) + 1) if n is None else n  # Note the requirement n>1, otherwise there's 'no context' and the model fails
-    counts = get_counts(n)
+    counts = get_counts(n,dev=dev)
     start_tokens = start.lower().split()
     need = n-1
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
@@ -89,7 +91,7 @@ def run(response, answer, params:Params) -> Result:
     response_used = isinstance(response, str)
     context = response if response_used else "the general" # Default context
     context_window = params.get("context_window", 3) or 3
-    output.append(generate(context,word_count,context_window))
+    output.append(generate(context,word_count,context_window,dev=params.get("dev", False)))
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
     feedback_items = [("general", preface + ' '.join(output))]
     #feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
