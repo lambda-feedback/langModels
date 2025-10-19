@@ -30,7 +30,7 @@ WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 # If creating locally, to be copied when deployed:
 FILE = MODEL_DIR / "ngram_counts.pkl.bz2"
 
-def get_counts(n=3, dev):
+def get_counts(n=3, dev=False):
     print(f"Loading/building n-gram counts for n={n}...")
     if os.path.exists(FILE):
         try:
