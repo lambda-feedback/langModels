@@ -64,7 +64,10 @@ def sample_next(counts, ctx):
 def generate(start="", max_len=20, n=None, dev=False):
     start_tokens = start.lower().split()
     n = max(2, len(start_tokens) + 1) if n is None else n  # Note the requirement n>1, otherwise there's 'no context' and the model fails
-    counts = get_counts(n,dev=dev)
+    try:
+        counts = get_counts(n,dev=dev)
+    except Exception as e:
+        raise Exception("[Error loading n-gram counts: {}]".format(e))
     start_tokens = start.lower().split()
     need = n-1
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
@@ -91,7 +94,10 @@ def run(response, answer, params:Params) -> Result:
     response_used = isinstance(response, str)
     context = response if response_used else "the general" # Default context
     context_window = params.get("context_window", 3) or 3
-    output.append(generate(context,word_count,context_window,dev=params.get("dev", False)))
+    try:
+        output.append(generate(context,word_count,context_window,dev=params.get("dev", False)))
+    except Exception as e:
+        return Result(is_correct=False,feedback_items=[("general", f"An error occured."),("error",str(e))])
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
     feedback_items = [("general", preface + ' '.join(output))]
     #feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
