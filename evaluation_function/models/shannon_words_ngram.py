@@ -45,7 +45,7 @@ def get_counts(n=3, dev=False):
             with bz2.BZ2File(FILE, "rb") as f:
                 cache = pickle.load(f)
         except Exception as e:
-            raise RuntimeError(f"Failed to rebuild or save n-gram counts: {e}")
+            raise RuntimeError(f"Failed to rebuild or save n-gram counts {e}")
     else:
         raise FileNotFoundError(f"N-gram counts file not found at {FILE}, and dev mode is off so counts not generated.")    
     counts = cache[n]
@@ -67,7 +67,7 @@ def generate(start="", max_len=20, n=None, dev=False):
     try:
         counts = get_counts(n,dev=dev)
     except Exception as e:
-        raise Exception("[Error loading n-gram counts: {}]".format(e))
+        raise Exception("[Error loading n-gram counts]") from e
     start_tokens = start.lower().split()
     need = n-1
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
@@ -97,7 +97,15 @@ def run(response, answer, params:Params) -> Result:
     try:
         output.append(generate(context,word_count,context_window,dev=params.get("dev", False)))
     except Exception as e:
-        return Result(is_correct=False,feedback_items=[("general", f"An error occured."),("error",str(e))])
+        #return Result(is_correct=False,feedback_items=[("general", f"An error occured."),("error",str(e))])
+        tb = traceback.format_exc()
+        return {
+            "status": "error",
+            "is_correct": False,
+            "feedback": "An error occurred.",
+            "error_message": str(e),
+            "traceback": tb,
+        }
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
     feedback_items = [("general", preface + ' '.join(output))]
     #feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
