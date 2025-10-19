@@ -31,6 +31,7 @@ WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 FILE = MODEL_DIR / "ngram_counts.pkl.bz2"
 
 def get_counts(n=3):
+    print(f"Loading/building n-gram counts for n={n}...")
     if os.path.exists(FILE):
         with bz2.BZ2File(FILE, "rb") as f:
             cache = pickle.load(f)

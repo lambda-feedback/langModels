@@ -1,6 +1,4 @@
 import csv
-import nltk
-from nltk.corpus import brown, reuters, gutenberg, webtext
 
 def csv_to_lists(filename: str) -> list:
     frequencies = []
@@ -12,8 +10,11 @@ def csv_to_lists(filename: str) -> list:
     return frequencies
 
 
-# Generate word ngram counts from NLTK corpora
+# Only locally: Generate word ngram counts from NLTK corpora
 def corpus_sents():  # CHANGE
+    # Only import NLTK when this function is called (so not when deployed)
+    import nltk
+    from nltk.corpus import brown, reuters, gutenberg, webtext
     # Each yields lists of tokens already sentence-segmented
     for s in brown.sents():      yield s
     for s in reuters.sents():    yield s
