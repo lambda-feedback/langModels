@@ -20,17 +20,12 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR \
     find /app/.venv -path "*/tests/*" -delete && \
     find /app/.venv -path "*/test/*" -delete && \
     find /app/.venv -name "*.md" -delete && \
-    find /app/.venv -name "*.txt" -delete &&\
-    # Download NLTK corpora into the venv so it's cached ---
-    /app/.venv/bin/python -m nltk.downloader -d /app/.venv/nltk_data brown reuters gutenberg webtext punkt punkt_tab
-
-ENV NLTK_DATA=/app/.venv/nltk_data
+    find /app/.venv -name "*.txt" -delete
 
 FROM ghcr.io/lambda-feedback/evaluation-function-base/python:3.12
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
-    ENV NLTK_DATA=/app/.venv/nltk_data
 
 # Copy the cleaned virtual environment
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}

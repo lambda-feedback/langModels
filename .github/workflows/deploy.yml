@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          lfs: true
 
       - name: Set up Python ${{ matrix.python-version }}
         id: python-setup
@@ -103,4 +104,3 @@ jobs:
       aws-key-id: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_ID }}
       aws-secret-key: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_SECRET}}
       function-admin-api-key: ${{ secrets.FUNCTION_ADMIN_API_KEY}}
-

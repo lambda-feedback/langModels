@@ -8,6 +8,13 @@ from lf_toolkit.evaluation import Result, Params
 from .utils import csv_to_lists, build_counts
 
 
+import sys, traceback
+def log(msg):
+    sys.stdout.write(msg + "\n")
+    sys.stdout.flush()
+
+log(f"[DEBUG] Starting shannon_words_ngram.py")
+
 # Local users run the following once (no need if using Docker):
 #nltk.download("brown"); nltk.download("reuters"); nltk.download("gutenberg"); nltk.download("webtext")  # CHANGE (one-time)
 
