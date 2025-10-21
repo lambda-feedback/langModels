@@ -28,15 +28,13 @@ WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 # If creating when deployed: 
 #FILE = Path(tempfile.gettempdir()) / "ngram_counts.pkl"
 # If creating locally, to be copied when deployed:
-FILE = MODEL_DIR / "ngram_counts.pkl.bz2"
+FILE = MODEL_DIR / "ngram_counts.pkl"
 
 def get_counts(n=3, dev=False):
     print(f"Loading/building n-gram counts for n={n}...")
     if os.path.exists(FILE):
-        size = os.path.getsize(FILE)
-        raise RuntimeError(f"Found {FILE}, size={size} bytes")
         try:
-            with bz2.BZ2File(FILE, "rb") as f:
+            with open(FILE, "rb") as f:
                 cache = pickle.load(f)
             if not isinstance(cache, dict):
                 raise RuntimeError(f"Loaded cache is {type(cache)}, not dict — contents: {str(cache)[:300]}")
@@ -52,7 +50,7 @@ def get_counts(n=3, dev=False):
                 print(f"Building n={n} counts...")
                 cache[n] = build_counts(n, START, END)  # only works if NLTK corpora are available           
                 print(f"Saving n-gram counts to {FILE}...") 
-                with bz2.BZ2File(FILE, "wb") as f:
+                with open(FILE, "wb") as f:
                     pickle.dump(cache,f)
         except Exception as e:
             raise RuntimeError(f"Failed to rebuild or save n-gram counts {e}")
