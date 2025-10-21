@@ -44,14 +44,19 @@ def get_counts(n=3, dev=False):
             raise RuntimeError(f"Failed to load {FILE}: {e}")        
     elif dev: # from here the deployed version will not work because the corpora are not bundled (to save space)
         cache = {}
+        print(f"Building n-gram counts from NLTK corpora (dev mode)")
         try:
-            cache[n] = build_counts(n, START, END)  # only works if NLTK corpora are available            
-            with bz2.BZ2File(FILE, "rb") as f:
-                cache = pickle.load(f)
+            if n not in cache:
+                print(f"Building n={n} counts...")
+                cache[n] = build_counts(n, START, END)  # only works if NLTK corpora are available           
+                print(f"Saving n-gram counts to {FILE}...") 
+                with bz2.BZ2File(FILE, "wb") as f:
+                    pickle.dump(cache,f)
         except Exception as e:
             raise RuntimeError(f"Failed to rebuild or save n-gram counts {e}")
     else:
         raise FileNotFoundError(f"N-gram counts file not found at {FILE}, and dev mode is off so counts not generated.")    
+    print(f"Loaded cache is {type(cache)}, — contents: {str(cache)[:300]}")
     counts = cache[n]
     if n == 1:
         counts.setdefault((), {})                 # CHANGE: ensure unigram context exists

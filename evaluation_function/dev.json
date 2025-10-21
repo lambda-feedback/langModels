@@ -24,6 +24,7 @@
     "answer": 2,
     "model": "shannon_words_ngram",
     "word_count": 12,
-    "context_window": 3
+    "context_window": 8,
+    "dev": true
   }
 }
