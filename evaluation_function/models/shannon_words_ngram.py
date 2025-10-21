@@ -36,6 +36,10 @@ def get_counts(n=3, dev=False):
         try:
             with bz2.BZ2File(FILE, "rb") as f:
                 cache = pickle.load(f)
+            if not isinstance(cache, dict):
+                raise RuntimeError(f"Loaded cache is {type(cache)}, not dict — contents: {str(cache)[:300]}")
+            if n not in cache:
+                raise RuntimeError(f"Loaded keys={list(cache.keys())[:10]} (len={len(cache)}) — expected {n}")
         except Exception as e:
             raise RuntimeError(f"Failed to load {FILE}: {e}")        
     elif dev: # from here the deployed version will not work because the corpora are not bundled (to save space)
