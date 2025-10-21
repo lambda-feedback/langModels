@@ -33,6 +33,8 @@ FILE = MODEL_DIR / "ngram_counts.pkl.bz2"
 def get_counts(n=3, dev=False):
     print(f"Loading/building n-gram counts for n={n}...")
     if os.path.exists(FILE):
+        size = os.path.getsize(FILE)
+        raise RuntimeError(f"Found {FILE}, size={size} bytes")
         try:
             with bz2.BZ2File(FILE, "rb") as f:
                 cache = pickle.load(f)
