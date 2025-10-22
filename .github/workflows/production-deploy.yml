@@ -101,6 +101,7 @@ jobs:
       environment: "production"
       version-bump: ${{ inputs.version-bump }}
       branch: ${{ inputs.branch }}
+      lfs: true
     secrets:
       aws-key-id: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_ID }}
       aws-secret-key: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_SECRET}}

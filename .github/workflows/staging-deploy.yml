@@ -28,6 +28,8 @@ jobs:
           lfs: true
       - name: pull lfs files
         run: git lfs pull
+      - name: Verify LFS files
+        run: git lfs ls-files
       - name: Set up Python ${{ matrix.python-version }}
         id: python-setup
         uses: actions/setup-python@v5
@@ -88,6 +90,7 @@ jobs:
       template-repository-name: "lambda-feedback/evaluation-function-boilerplate-python"
       build-platforms: "aws"
       environment: "staging"
+      lfs: true
     secrets:
       aws-key-id: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_ID }}
       aws-secret-key: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_SECRET}}
