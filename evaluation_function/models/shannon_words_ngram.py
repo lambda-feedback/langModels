@@ -28,36 +28,36 @@ WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 # If creating when deployed: 
 #FILE = Path(tempfile.gettempdir()) / "ngram_counts.pkl"
 # If creating locally, to be copied when deployed:
-FILE = MODEL_DIR / "ngram_counts.pkl"
+FILE_BASE = MODEL_DIR / "ngram_counts.pkl.bz2" 
 
 def get_counts(n=3, dev=False):
     print(f"Loading/building n-gram counts for n={n}...")
-    if os.path.exists(FILE):
+    FILE_NAME = FILE_BASE.with_name(FILE_BASE.stem + f"_{n:02d}" + "".join(FILE_BASE.suffixes))
+    if os.path.exists(FILE_NAME):
         try:
-            with open(FILE, "rb") as f:
+            with bz2.BZ2File(FILE_NAME, "rb") as f:
                 cache = pickle.load(f)
             if not isinstance(cache, dict):
                 raise RuntimeError(f"Loaded cache is {type(cache)}, not dict — contents: {str(cache)[:300]}")
-            if n not in cache:
-                raise RuntimeError(f"Loaded keys={list(cache.keys())[:10]} (len={len(cache)}) — expected {n}")
+            #if n not in cache:
+            #    raise RuntimeError(f"Loaded keys={list(cache.keys())[:10]} (len={len(cache)}) — expected {n}")
         except Exception as e:
-            raise RuntimeError(f"Failed to load {FILE}: {e}")        
+            raise RuntimeError(f"Failed to load {FILE_NAME}: {e}")        
     elif dev: # from here the deployed version will not work because the corpora are not bundled (to save space)
         cache = {}
         print(f"Building n-gram counts from NLTK corpora (dev mode)")
         try:
             if n not in cache:
-                print(f"Building n={n} counts...")
-                cache[n] = build_counts(n, START, END)  # only works if NLTK corpora are available           
-                print(f"Saving n-gram counts to {FILE}...") 
-                with open(FILE, "wb") as f:
-                    pickle.dump(cache,f)
+                print(f"Starting building counts up to n={n} ...")
+                build_counts(FILE_BASE, list(range(1, n + 1)), START, END)  # only works if NLTK corpora are available           
+                with bz2.BZ2File(FILE_NAME, "rb") as f:
+                    cache = pickle.load(f)
         except Exception as e:
             raise RuntimeError(f"Failed to rebuild or save n-gram counts {e}")
     else:
         raise FileNotFoundError(f"N-gram counts file not found at {FILE}, and dev mode is off so counts not generated.")    
     print(f"Loaded cache is {type(cache)}, — contents: {str(cache)[:300]}")
-    counts = cache[n]
+    counts = cache
     if n == 1:
         counts.setdefault((), {})                 # CHANGE: ensure unigram context exists
         counts[()].pop(END, None)                 # CHANGE: drop </s> if present (old caches)
