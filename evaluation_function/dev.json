@@ -1,7 +1,7 @@
 {
   "basic_nn": {
     "response": "1.0",
-    "answer": "1.0",
+    "answer": "10.0",
     "model": "basic_nn",
     "refresh": false
   },
