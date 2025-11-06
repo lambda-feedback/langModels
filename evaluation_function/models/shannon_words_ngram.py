@@ -1,7 +1,7 @@
 """
 A simple n-gram (word) Shannon-style language model with add-one smoothing.
 """
-import lmdb, pickle, json, os, random
+import lmdb, pickle, json, os, random, traceback
 from pathlib import Path
 from io import StringIO
 from lf_toolkit.evaluation import Result, Params
@@ -34,7 +34,7 @@ def normalize_context(ctx, n):
 def query_sharded(n, context):
     """Query the sharded LMDB for the given n-gram context. Returns counts dict or None."""
     context = normalize_context(context, n)
-    n_dir = BASE_DIR / f"ngrams_{n}"
+    n_dir = MODEL_DIR / f"ngrams_{n}"
     with open(n_dir / "index.json") as f:
         index = json.load(f)
     shard = shard_for(tuple(context), len(index))
