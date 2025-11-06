@@ -105,13 +105,4 @@ if __name__ == "__main__":
     result = run("some_response", "some_answer", Params())
     print(result)
 
-"""     # 5. Plot results (eval mode, extended domain)
-    with torch.no_grad():
-        # Make domain twice as wide as training range
-        x_plot = torch.linspace(2*x.min().item(), 2*x.max().item(), 800, device=x.device).unsqueeze(1)
-        y_plot = model(x_plot)
 
-        plt.scatter(x.cpu(), y.cpu(), s=10, label="Data")
-        plt.plot(x_plot.cpu(), y_plot.cpu(), color="red", label="Model")
-        plt.legend()
-        plt.show() """

@@ -1,19 +1,13 @@
 """
 A simple n-gram (word) Shannon-style language model with add-one smoothing.
 """
-import os, random, pickle, bz2, tempfile
+import lmdb, pickle, json, os, random
 from pathlib import Path
 from io import StringIO
 from lf_toolkit.evaluation import Result, Params
-from .utils import csv_to_lists, build_counts
-
-
-import sys, traceback
-def log(msg):
-    sys.stderr.write(msg + "\n")
-    sys.stderr.flush()
-
-log(f"[DEBUG] Starting shannon_words_ngram.py")
+from .utils import shard_for
+from collections import defaultdict
+import hashlib
 
 # Local users run the following once (no need if using Docker):
 #nltk.download("brown"); nltk.download("reuters"); nltk.download("gutenberg"); nltk.download("webtext")  # CHANGE (one-time)
@@ -22,81 +16,57 @@ START, END = "<s>", "</s>"
 
 # Setup paths for saving/loading model and data
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
+MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"/"lmdb_sharded"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
-WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
-# If creating when deployed: 
-#FILE = Path(tempfile.gettempdir()) / "ngram_counts.pkl"
-# If creating locally, to be copied when deployed:
-FILE_BASE = MODEL_DIR / "ngram_counts.pkl.bz2" 
 
-def get_counts(n=3, dev=False):
-    print(f"Loading/building n-gram counts for n={n}...")
-    FILE_NAME = FILE_BASE.with_name(FILE_BASE.stem + f"_{n:02d}" + "".join(FILE_BASE.suffixes))
-    if os.path.exists(FILE_NAME):
-        try:
-            with bz2.BZ2File(FILE_NAME, "rb") as f:
-                cache = pickle.load(f)
-            if not isinstance(cache, dict):
-                raise RuntimeError(f"Loaded cache is {type(cache)}, not dict — contents: {str(cache)[:300]}")
-            #if n not in cache:
-            #    raise RuntimeError(f"Loaded keys={list(cache.keys())[:10]} (len={len(cache)}) — expected {n}")
-        except Exception as e:
-            raise RuntimeError(f"Failed to load {FILE_NAME}: {e}")        
-    elif dev: # from here the deployed version will not work because the corpora are not bundled (to save space)
-        cache = {}
-        print(f"Building n-gram counts from NLTK corpora (dev mode)")
-        try:
-            if n not in cache:
-                print(f"Starting building counts up to n={n} ...")
-                build_counts(FILE_BASE, list(range(1, n + 1)), START, END)  # only works if NLTK corpora are available           
-                with bz2.BZ2File(FILE_NAME, "rb") as f:
-                    cache = pickle.load(f)
-        except Exception as e:
-            raise RuntimeError(f"Failed to rebuild or save n-gram counts {e}")
-    else:
-        raise FileNotFoundError(f"N-gram counts file not found at {FILE}, and dev mode is off so counts not generated.")    
-    print(f"Loaded cache is {type(cache)}, — contents: {str(cache)[:300]}")
-    counts = cache
-    if n == 1:
-        counts.setdefault((), {})                 # CHANGE: ensure unigram context exists
-        counts[()].pop(END, None)                 # CHANGE: drop </s> if present (old caches)
-    return counts
+os.environ["PYTHONHASHSEED"] = "0"
+    
+def normalize_context(ctx, n):
+    """Ensure context length == n-1 by truncating or padding."""
+    target_len = n - 1
+    if len(ctx) > target_len:
+        ctx = ctx[-target_len:]  # keep most recent tokens
+    elif len(ctx) < target_len:
+        pad = (START,) * (target_len - len(ctx))
+        ctx = pad + tuple(ctx)
+    return tuple(ctx)
 
-def sample_next(counts, ctx):
-    options = counts.get(ctx) or counts.get((), {})
-    if not options:
-        return None
-    words, freqs = zip(*options.items())
-    return random.choices(words, freqs)[0]
+def query_sharded(n, context):
+    """Query the sharded LMDB for the given n-gram context. Returns counts dict or None."""
+    context = normalize_context(context, n)
+    n_dir = BASE_DIR / f"ngrams_{n}"
+    with open(n_dir / "index.json") as f:
+        index = json.load(f)
+    shard = shard_for(tuple(context), len(index))
+    env = lmdb.open(index[str(shard)], readonly=True, lock=False)
+    with env.begin() as txn:
+        data = txn.get(pickle.dumps(tuple(context)))
+        if not data:
+            print(f"Context {context} not found in shard {shard}.")
+            print(index)
+        return pickle.loads(data) if data else None
 
 def generate(start="", max_len=20, n=None, dev=False):
     start_tokens = start.lower().split()
     n = max(2, len(start_tokens) + 1) if n is None else n  # Note the requirement n>1, otherwise there's 'no context' and the model fails
-    try:
-        counts = get_counts(n,dev=dev)
-    except Exception as e:
-        raise Exception("[Error loading n-gram counts]") from e
     start_tokens = start.lower().split()
     need = n-1
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
     out = start_tokens[:]
     for _ in range(max_len):
-        w = sample_next(counts, ctx)
-        if w in (None, END):
+        res = query_sharded(n, ctx)
+        next_word = max(res, key=res.get) if res else None
+
+        if next_word in (None, END):
             out.append('#')
             break
-        out.append(w)
+        out.append(next_word)
         if need:
-            ctx = tuple((list(ctx)+[w])[-need:])
+            ctx = tuple((list(ctx)+[next_word])[-need:])
     return " ".join(out)
 
 def run(response, answer, params:Params) -> Result:
     output=[]
-    data = csv_to_lists(WORD_LENGTHS_PATH)
-    word_lengths = {}
-    word_lengths["tokens"] = [row[0] for row in data]
-    word_lengths["weights"] = [row[1] for row in data]
     word_count = params.get("word_count", 10)
     if word_count == "random":
         word_count = random.randint(3,15)

@@ -19,28 +19,30 @@ priority = "explicit"
 python = ">=3.11,<3.14"
 
 # Uncomment below and comment out cpu if using macOS, the marker feature does not work (at least on my machine) - MM
-torch = { version = "^2.8.0", markers = "sys_platform != 'linux'" }
+torch = { version = "^2.9.0", markers = "sys_platform != 'linux'" }
 #torch = { version = "^2.8.0+cpu", markers = "sys_platform == 'linux'", source = "pytorch-cpu" }
 
-typing_extensions = "^4.12.2"
+typing_extensions = "^4.15.0"
 lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", branch = "main", extras = [
     "ipc",
 ] }
 numpy = "^2.3.4"
+lmdb = "^1.7.5"
 
 [tool.poetry.group.overrides.dependencies]
 # Override sympy because lf-toolkit pins sympy==1.12, 
 # but torch>=2.8.0 requires sympy>=1.13.3.
 # Remove this once lf-toolkit updates its dependency:
 # https://github.com/lambda-feedback/toolkit-python/issues/2
-sympy = ">=1.13.3"
+sympy = ">=1.14.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.2.2"
-flake8 = "^7.1.0"
+pytest = "^8.4.2"
+flake8 = "^7.3.0"
 nltk = "^3.9.2"
-matplotlib = "^3.8.0"
-pandas = "^2.2.1"
+matplotlib = "^3.10.7"
+pandas = "^2.3.3"
+sentencepiece = "^0.2.1"
 
 [build-system]
 requires = ["poetry-core"]

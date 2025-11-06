@@ -1,0 +1,8 @@
+{
+  "N": 7,
+  "EMBED_DIM": 64,
+  "HIDDEN": 256,
+  "DROPOUT_P": 0.3,
+  "vocab_size": 8000,
+  "model_path": "bengio_model.pt"
+}

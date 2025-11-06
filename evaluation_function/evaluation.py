@@ -33,6 +33,8 @@ def evaluation_function(
 
     model_name = params.get("model", "basic_nn") # default
 
+    print(model_name)
+
     print(response, answer, params)
     try:
         model = getattr(models, model_name)   # e.g. models.basic_nn

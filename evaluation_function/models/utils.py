@@ -1,4 +1,6 @@
 import csv, pickle, bz2
+import torch.nn as nn
+import hashlib
 
 def csv_to_lists(filename: str) -> list:
     frequencies = []
@@ -21,19 +23,26 @@ def corpus_sents():  # CHANGE
     for s in gutenberg.sents():  yield s
     for s in webtext.sents():    yield s
 
-def build_counts(FILE, n=[1,2,3,4], START="<s>", END="</s>"):
-    for j in n:
-        print(f"Building {j}-gram counts...")
-        FILE_NAME = FILE.with_name(FILE.stem + f"_{j:02d}" + "".join(FILE.suffixes))
-        counts = {}
-        for sent in corpus_sents():
-            tokens = [w.lower() for w in sent]
-            s = ([START] * (j - 1)) + tokens + ([END] if j > 1 else [])  
-            for i in range(len(s)-j+1):
-                ctx = tuple(s[i:i+j-1])
-                nxt = s[i+j-1]
-                counts.setdefault(ctx, {})
-                counts[ctx][nxt] = counts[ctx].get(nxt, 0) + 1
-        with bz2.BZ2File(FILE_NAME, "wb") as f:
-            pickle.dump(counts,f)
-    return
+def shard_for(ctx, n_shards): # Deterministic shard assignment
+    h = hashlib.sha1(str(ctx).encode("utf8")).hexdigest()
+    return int(h, 16) % n_shards
+
+class NeuralLM(nn.Module):
+    def __init__(self, vocab_size, n_ctx, embed_dim, hidden, dropout_p):
+        super().__init__()
+        self.emb = nn.Embedding(vocab_size, embed_dim)
+        self.fc1 = nn.Linear(n_ctx * embed_dim, hidden)
+        self.act = nn.Tanh()
+        self.drop = nn.Dropout(dropout_p) 
+        self.fc2 = nn.Linear(hidden, vocab_size)
+    def forward(self, ctx_idx):  # ctx_idx: (B, n)
+        e = self.emb(ctx_idx)               # (B, n, d)
+        x = e.reshape(e.size(0), -1)        # (B, n*d)
+        h = self.act(self.fc1(x))           # (B, H)
+        logits = self.fc2(h)                # (B, V)
+        return logits
+    
+def encode(seq):
+    import sentencepiece as spm
+    sp = spm.SentencePieceProcessor(model_file="bpe.model")
+    return sp.encode(" ".join(seq), out_type=int)

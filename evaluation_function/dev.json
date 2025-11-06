@@ -19,10 +19,33 @@
     "word_count": "random",
     "context_window": 5
   },
+  "shannon_words_build": {
+    "response": "the general sweetness",
+    "answer": 2,
+    "model": "shannon_words_build",
+    "n_max": 7,
+    "dev": true
+  },
   "shannon_words_ngram": {
     "response": "the general sweetness",
     "answer": 2,
     "model": "shannon_words_ngram",
+    "word_count": 12,
+    "context_window": 3,
+    "dev": true
+  },
+  "bengio_train": {
+    "response": "the general sweetness",
+    "answer": 3,
+    "model": "bengio_train",
+    "word_count": 12,
+    "context_window": 3,
+    "dev": true
+  },
+  "bengio_infer": {
+    "response": "the general sweetness",
+    "answer": 3,
+    "model": "bengio_infer",
     "word_count": 12,
     "context_window": 3,
     "dev": true
