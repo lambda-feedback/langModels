@@ -43,7 +43,6 @@ def query_sharded(n, context):
         data = txn.get(pickle.dumps(tuple(context)))
         if not data:
             print(f"Context {context} not found in shard {shard}.")
-            print(index)
         return pickle.loads(data) if data else None
 
 def generate(start="", max_len=20, n=None, dev=False):
@@ -53,26 +52,31 @@ def generate(start="", max_len=20, n=None, dev=False):
     need = n-1
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
     out = start_tokens[:]
-    for _ in range(max_len):
-        res = query_sharded(n, ctx)
-        next_word = max(res, key=res.get) if res else None
-
-        if next_word in (None, END):
-            out.append('#')
-            break
-        out.append(next_word)
-        if need:
-            ctx = tuple((list(ctx)+[next_word])[-need:])
-    return " ".join(out)
+    if max_len == 0:
+        next_word = query_sharded(n, ctx)
+        output_str = "\n".join(f"{v} {k}" for k, v in sorted(next_word.items(), key=lambda x: x[1], reverse=True))
+        return output_str
+    else:
+        for _ in range(max_len):
+            res = query_sharded(n, ctx)
+            if res is None or res == END or not res:
+                out.append('#')
+                break
+            words = list(res.keys())
+            probs = list(res.values())
+            next_word = random.choices(words, weights=probs, k=1)[0]
+            out.append(next_word)
+            if need:
+                ctx = tuple((list(ctx)+[next_word])[-need:])
+        return " ".join(out)
 
 def run(response, answer, params:Params) -> Result:
     output=[]
-    word_count = params.get("word_count", 10)
-    if word_count == "random":
-        word_count = random.randint(3,15)
-    response_used = isinstance(response, str)
-    context = response if response_used else "the general" # Default context
     context_window = params.get("context_window", 3) or 3
+    context = response if isinstance(response, str) else "the general" # Default context
+    word_count = params.get("word_count", 10)
+    word_count = random.randint(3,15) if word_count == "random" else word_count        
+
     try:
         output.append(generate(context,word_count,context_window,dev=params.get("dev", False)))
     except Exception as e:
@@ -86,8 +90,7 @@ def run(response, answer, params:Params) -> Result:
             "traceback": tb,
         }
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
-    feedback_items = [("general", preface + ' '.join(output))]
-    #feedback_items.append("| Answer not an integer; used default context window") if not response_used else None
+    feedback_items = [("general", preface + ' '.join(output).replace("</s>", "").replace("<s>", "").strip())]
     is_correct = True
     print(feedback_items)
     return Result(is_correct=is_correct,feedback_items=feedback_items)
