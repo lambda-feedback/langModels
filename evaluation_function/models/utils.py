@@ -44,5 +44,13 @@ class NeuralLM(nn.Module):
     
 def encode(seq):
     import sentencepiece as spm
-    sp = spm.SentencePieceProcessor(model_file="bpe.model")
+    from pathlib import Path
+    import os
+    BASE_DIR = Path(__file__).resolve().parent
+    MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"))
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    BPE_PATH = MODEL_DIR / "bpe.model"
+    if not BPE_PATH.exists():
+        raise FileNotFoundError(f"Missing SentencePiece model at {BPE_PATH}")
+    sp = spm.SentencePieceProcessor(model_file=str(BPE_PATH))
     return sp.encode(" ".join(seq), out_type=int)

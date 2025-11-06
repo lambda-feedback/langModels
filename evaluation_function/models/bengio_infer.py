@@ -23,7 +23,7 @@ def complete(prompt, steps=10,model=None,config=None,sp=None,device=None):
     import random
     import torch
     with torch.no_grad():
-        words = prompt[:]
+        words = sp.encode(prompt, out_type=str)
         for _ in range(steps):
             dist = predict_next(words, topk=5, model=model, config=config, sp=sp, device=device)
             words_probs = [(word, prob) for word, prob in dist]
@@ -36,7 +36,6 @@ def run(response, answer, params: Params) -> Result:
     print("Loading Bengio-style Neural N-gram Language Model for inference...")
     import torch
     import sentencepiece as spm
-    sp = spm.SentencePieceProcessor(model_file="bpe.model")
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -45,6 +44,10 @@ def run(response, answer, params: Params) -> Result:
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     MODEL_PATH = MODEL_DIR / "bengio_model.pt"
     MODEL_CONFIG_PATH = MODEL_DIR / "bengio_model_config.json"
+    BPE_PATH = MODEL_DIR / "bpe.model"
+    if not BPE_PATH.exists():
+        raise FileNotFoundError(f"Missing SentencePiece model at {BPE_PATH}")
+    sp = spm.SentencePieceProcessor(model_file=str(BPE_PATH))
 
     with open(MODEL_CONFIG_PATH) as f:
         config = json.load(f)
@@ -61,16 +64,8 @@ def run(response, answer, params: Params) -> Result:
 
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     model.eval()
+    result=[]
+    completion = response if isinstance(response, str) else "the general"
+    result.append(complete(completion, steps=20, model=model, config=config, sp=sp, device=device))
 
-    completions = [
-        sp.encode("the cat sat", out_type=str),
-        sp.encode("the cat sat", out_type=str),
-        sp.encode("the cat sat", out_type=str),
-        sp.encode("the man saw", out_type=str),
-        sp.encode("in the general", out_type=str)
-    ]
-    for prompt in completions:
-        result = complete(prompt, steps=20, model=model, config=config, sp=sp, device=device)
-        print(f"Prompt: {' '.join(prompt)}\nCompletion: {result}\n")
-
-    return Result(is_correct=True, feedback_items=[("general", "Model loaded successfully for inference.")])    
+    return Result(is_correct=True, feedback_items=[("general", ''.join(result))])    
