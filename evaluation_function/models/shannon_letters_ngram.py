@@ -2,9 +2,7 @@ import random
 import csv
 import os
 from pathlib import Path
-from io import StringIO
 from .utils import csv_to_lists
-import re
 
 from lf_toolkit.evaluation import Result, Params
 
@@ -22,9 +20,7 @@ WORD_LENGTHS_PATH = MODEL_DIR / "norvig_word_length_frequencies.csv"
 # Relative Frequencies of Letters in General English Plain text From Cryptographical Mathematics, by Robert Edward Lewand
 # https://web.archive.org/web/20080708193159/http://pages.central.edu/emp/LintonT/classes/spring01/cryptography/letterfreq.html
 
-import csv, re, random
-
-def read_multingram_csv(filename: str):
+def read_multingram_csv(filename: Path):
     lookups = {}
     current_n = None
 
@@ -48,15 +44,13 @@ def read_multingram_csv(filename: str):
 
     return lookups
 
-NGRAM_LOOKUPS = read_multingram_csv(LETTERS_PATH)
-
 def sample_ngram(lookups, n, prefix="", k=1):
     data = lookups[n][prefix]
     return random.choices(data["keys"], weights=data["freqs"], k=k)
 
 
 def generate_word(N,n) -> str: # N = max letters, n = context window (as in, n-gram)
-    lookups = NGRAM_LOOKUPS
+    lookups = read_multingram_csv(LETTERS_PATH)
     N_max=N
     samples = {}
     samples[1] = sample_ngram(lookups, n=1, prefix="", k=1)[0]
@@ -85,20 +79,34 @@ def generate_word(N,n) -> str: # N = max letters, n = context window (as in, n-g
 
 def run(response, answer, params:Params) -> Result:
     output=[]
+
+    print("#### Getting data ####")
     data = csv_to_lists(WORD_LENGTHS_PATH)
+
+    print("#### Generating word lengths ####")
     word_lengths = {}
     word_lengths["tokens"] = [row[0] for row in data]
     word_lengths["weights"] = [row[1] for row in data]
+
+    print("#### Getting context window ####")
     word_count = params.get("word_count", 10)
     response_used = isinstance(response, int) and response > 1
     context_window = response if response_used else params.get("context_window", 3)
+
     if word_count == "random":
         word_count = random.randint(3,15)
+
+    print("#### Getting output ####")
     for i in range(word_count):
         k=int(random.choices(word_lengths["tokens"],weights=word_lengths["weights"],k=1)[0]) 
         output.append(generate_word(k,context_window))
+
+    print("#### Generating Feedback ####")
+
+    result = Result(True)
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
-    feedback_items = [("general", preface + ' '.join(output))]
-    feedback_items.append("| Answer not an integer >1; used default context window") if not response_used else None
-    is_correct = True
-    return Result(is_correct=is_correct,feedback_items=feedback_items)
+    result.add_feedback("general", preface + ' '.join(output))
+    if response_used:
+        result.add_feedback("general", "| Answer not an integer >1; used default context window") if not response_used else None
+
+    return result
