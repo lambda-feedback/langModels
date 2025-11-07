@@ -22,9 +22,13 @@ class TestEvaluationFunction(unittest.TestCase):
     """
 
     def test_evaluation(self):
-        response, answer, params = 1, 1, Params()
+        params = {
+            "response": 1,
+            "answer": 1,
+            "params": {}
+        }
 
-        result = evaluation_function(response, answer, params).to_dict()
+        result = evaluation_function(1, 1, params).to_dict()
 
         self.assertEqual(result.get("is_correct"), True)
         feedback = result.get("feedback", None)
