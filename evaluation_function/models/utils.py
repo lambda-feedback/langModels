@@ -1,8 +1,10 @@
 import csv, pickle, bz2
+from pathlib import Path
+
 import torch.nn as nn
 import hashlib
 
-def csv_to_lists(filename: str) -> list:
+def csv_to_lists(filename: Path) -> list:
     frequencies = []
     with open(filename, newline='') as csvfile:
         reader = csv.reader(csvfile)
@@ -15,7 +17,7 @@ def csv_to_lists(filename: str) -> list:
 # Only locally: Generate word ngram counts from NLTK corpora
 def corpus_sents():  # CHANGE
     # Only import NLTK when this function is called (so not when deployed)
-    import nltk
+
     from nltk.corpus import brown, reuters, gutenberg, webtext
     # Each yields lists of tokens already sentence-segmented
     for s in brown.sents():      yield s
