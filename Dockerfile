@@ -1,6 +1,6 @@
 FROM ghcr.io/lambda-feedback/evaluation-function-base/python:3.12 AS builder
 
-RUN pip install poetry==1.8.3
+RUN pip install poetry==2.2.1
 
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
@@ -37,7 +37,11 @@ COPY evaluation_function ./evaluation_function
 RUN python -m compileall -q .
 
 # Environment variables
-ENV FUNCTION_COMMAND="python" \
-    FUNCTION_ARGS="-m,evaluation_function.main" \
-    FUNCTION_RPC_TRANSPORT="ipc" \
-    LOG_LEVEL="debug"
+# Command to start the evaluation function with
+ENV FUNCTION_COMMAND="python"
+
+# Args to start the evaluation function with
+ENV FUNCTION_ARGS="-m,evaluation_function.main"
+
+ENV FUNCTION_INTERFACE="file"
+ENV LOG_LEVEL="debug"

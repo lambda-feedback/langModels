@@ -35,9 +35,14 @@ def query_sharded(n, context):
     """Query the sharded LMDB for the given n-gram context. Returns counts dict or None."""
     context = normalize_context(context, n)
     n_dir = MODEL_DIR / f"ngrams_{n}"
+    print(f"### n_dir {n_dir} ###")
+
     with open(n_dir / "index.json") as f:
         index = json.load(f)
     shard = shard_for(tuple(context), len(index))
+
+    print(f"#### Shard: {shard}, {index[str(shard)]} ####")
+    print(f"#### Pwd: {os.getcwd()}")
     env = lmdb.open(index[str(shard)], readonly=True, lock=False)
     with env.begin() as txn:
         data = txn.get(pickle.dumps(tuple(context)))
@@ -46,6 +51,7 @@ def query_sharded(n, context):
         return pickle.loads(data) if data else None
 
 def generate(start="", max_len=20, n=None, dev=False):
+    print("#### Generating... ####")
     start_tokens = start.lower().split()
     n = max(2, len(start_tokens) + 1) if n is None else n  # Note the requirement n>1, otherwise there's 'no context' and the model fails
     start_tokens = start.lower().split()
@@ -53,6 +59,7 @@ def generate(start="", max_len=20, n=None, dev=False):
     ctx = tuple((([START]*need) + start_tokens)[-need:]) if need else ()
     out = start_tokens[:]
     if max_len == 0:
+        print(f"#### Query shard {n}, {ctx} ####")
         next_word = query_sharded(n, ctx)
         output_str = "\n".join(f"{v} {k}" for k, v in sorted(next_word.items(), key=lambda x: x[1], reverse=True))
         return output_str
@@ -72,8 +79,12 @@ def generate(start="", max_len=20, n=None, dev=False):
 
 def run(response, answer, params:Params) -> Result:
     output=[]
+
+    print("#### Generating Context Window ####")
     context_window = params.get("context_window", 3) or 3
     context = response if isinstance(response, str) else "the general" # Default context
+
+    print("#### Getting word count ####")
     word_count = params.get("word_count", 10)
     word_count = random.randint(3,15) if word_count == "random" else word_count        
 
@@ -82,6 +93,7 @@ def run(response, answer, params:Params) -> Result:
     except Exception as e:
         #return Result(is_correct=False,feedback_items=[("general", f"An error occured."),("error",str(e))])
         tb = traceback.format_exc()
+        print("#### Error generating ####")
         return {
             "status": "error",
             "is_correct": False,
@@ -89,8 +101,9 @@ def run(response, answer, params:Params) -> Result:
             "error_message": str(e),
             "traceback": tb,
         }
+
+    result = Result(True)
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
-    feedback_items = [("general", preface + ' '.join(output).replace("</s>", "").replace("<s>", "").strip())]
-    is_correct = True
-    print(feedback_items)
-    return Result(is_correct=is_correct,feedback_items=feedback_items)
+    result.add_feedback("general", preface + ' '.join(output).replace("</s>", "").replace("<s>", "").strip())
+
+    return result

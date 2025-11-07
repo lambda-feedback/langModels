@@ -30,12 +30,17 @@ def evaluation_function(
     return types and that evaluation_function() is the main function used
     to output the evaluation response.
     """
+    request_params = params.get("params", None)
+    response = params.get("response", None)
+    answer = params.get("answer", None)
+    model_name = request_params.get("model", "basic_nn") # default
 
-    model_name = params.get("model", "basic_nn") # default
+    print(f"#### Params: {str(params)} ####")
+    print(f"#### Request Params: {str(request_params)} ####")
+    print(f"#### Model Name: {str(model_name)} ####")
+    print(f"#### Response: {str(response)} ####")
+    print(f"#### Answer: {str(answer)} ####")
 
-    print(model_name)
-
-    print(response, answer, params)
     try:
         model = getattr(models, model_name)   # e.g. models.basic_nn
     except AttributeError:
@@ -44,4 +49,6 @@ def evaluation_function(
     if not hasattr(model, "run"):
         raise ValueError(f"Model {model_name} has no run()")
 
-    return model.run(response, answer, params)
+    print(f"#### MODEL: {str(model)} ####")
+
+    return model.run(response, answer, request_params)

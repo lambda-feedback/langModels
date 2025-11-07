@@ -2,14 +2,13 @@ import lmdb, pickle, nltk, json, os
 from nltk.corpus import brown
 from pathlib import Path
 from collections import defaultdict
-import hashlib
 from evaluation_function.models.utils import shard_for
 from lf_toolkit.evaluation import Result, Params
 
 os.environ["PYTHONHASHSEED"] = "0"
 
 START, END = "<s>", "</s>"
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path("evaluation_function/models")
 MODEL_DIR = Path(os.environ.get("MODEL_DIR", BASE_DIR / "storage"/"lmdb_sharded"))
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -50,7 +49,7 @@ def build_sharded_lmdb(n=4, n_shards=64, map_size=2**28):
 
 
 def run(response, answer, params:Params) -> Result:
-    #nltk.download("brown", quiet=True)
+    nltk.download("brown", quiet=True)
     n_max = params.get("n_max",7)
     for n in range(2,n_max+1):
         print('Building for n=', n)
@@ -58,3 +57,6 @@ def run(response, answer, params:Params) -> Result:
         print('Complete for n=', n)
 
     return Result(is_correct=True, feedback_items = [("general", "Complete.")])
+
+if __name__ == "__main__":
+    run(None, None, {})
