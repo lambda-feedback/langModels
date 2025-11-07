@@ -3,7 +3,7 @@ from nltk.corpus import brown
 from pathlib import Path
 from collections import defaultdict
 import hashlib
-from .utils import shard_for
+from evaluation_function.models.utils import shard_for
 from lf_toolkit.evaluation import Result, Params
 
 os.environ["PYTHONHASHSEED"] = "0"
