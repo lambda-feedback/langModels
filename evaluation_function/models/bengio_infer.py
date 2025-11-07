@@ -1,12 +1,16 @@
 # Inference code for Bengio-style Neural N-gram Language Model
 import json, os
+
+from evaluation_function.lazy_load import LazyModule
 from evaluation_function.models.utils import NeuralLM
 from pathlib import Path
 from lf_toolkit.evaluation import Result, Params
 
+torch = LazyModule("torch")
+spm = LazyModule("sentencepiece")
+
 def predict_next(context_words, topk=5, model=None,config=None, sp=None, device=None):
     from evaluation_function.models.utils import encode
-    import torch
     N = config["N"]
     UNK = sp.unk_id()
     with torch.no_grad():
@@ -21,7 +25,6 @@ def predict_next(context_words, topk=5, model=None,config=None, sp=None, device=
 
 def complete(prompt, steps=10,model=None,config=None,sp=None,device=None):
     import random
-    import torch
     with torch.no_grad():
         words = sp.encode(prompt, out_type=str)
         for _ in range(steps):
@@ -33,9 +36,7 @@ def complete(prompt, steps=10,model=None,config=None,sp=None,device=None):
     return sp.decode(words)
 
 def run(response, answer, params: Params) -> Result:
-    print("Loading Bengio-style Neural N-gram Language Model for inference...")
-    import torch
-    import sentencepiece as spm
+    print("### Loading Bengio-style Neural N-gram Language Model for inference... ###")
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -45,10 +46,15 @@ def run(response, answer, params: Params) -> Result:
     MODEL_PATH = MODEL_DIR / "bengio_model.pt"
     MODEL_CONFIG_PATH = MODEL_DIR / "bengio_model_config.json"
     BPE_PATH = MODEL_DIR / "bpe.model"
+
+    print("### Loading BPE Model ###")
     if not BPE_PATH.exists():
         raise FileNotFoundError(f"Missing SentencePiece model at {BPE_PATH}")
     sp = spm.SentencePieceProcessor(model_file=str(BPE_PATH))
 
+    print("### Loaded sentence processor ###")
+
+    print("### Loading NeuralLM ")
     with open(MODEL_CONFIG_PATH) as f:
         config = json.load(f)
 
@@ -60,12 +66,13 @@ def run(response, answer, params: Params) -> Result:
         dropout_p=config["DROPOUT_P"]
     ).to(device)
 
-    print(model)
-
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    print(f"### Loaded neural LM {model} ###")
+    print("### Evaluating")
     model.eval()
-    result=[]
-    completion = response if isinstance(response, str) else "the general"
-    result.append(complete(completion, steps=20, model=model, config=config, sp=sp, device=device))
 
-    return Result(is_correct=True, feedback_items=[("general", ''.join(result))])    
+    result = Result(True)
+    completion = response if isinstance(response, str) else "the general"
+    result.add_feedback("general", complete(completion, steps=20, model=model, config=config, sp=sp, device=device))
+
+    return result
