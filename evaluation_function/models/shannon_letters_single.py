@@ -2,8 +2,6 @@ import random
 import csv
 import os
 from pathlib import Path
-from io import StringIO
-import re
 
 from lf_toolkit.evaluation import Result, Params
 
@@ -35,14 +33,19 @@ class FrequencyData:
             self.tokens = [row[0] for row in data]
             self.weights = [row[1] for row in data]
 
-uniform_letters = FrequencyData()
-uniform_letters.tokens  = [chr(65 + i) for i in range(26)]  # 'A' to 'Z'
-uniform_letters.tokens.append(' ')  # Add space character   
-uniform_letters.weights = [1] * 27  # Equal weights for uniform distribution    
-letters = FrequencyData(LETTERS_PATH)
-word_lengths = FrequencyData(WORD_LENGTHS_PATH)
-
 def generate_string(uniform=False,word_count=5) -> str:
+    print("#### Generating uniform letters ####")
+    uniform_letters = FrequencyData()
+    uniform_letters.tokens = [chr(65 + i) for i in range(26)]  # 'A' to 'Z'
+    uniform_letters.tokens.append(' ')  # Add space character
+    uniform_letters.weights = [1] * 27  # Equal weights for uniform distribution
+
+    print(f"#### Letters Path {LETTERS_PATH} ####")
+    letters = FrequencyData(LETTERS_PATH)
+    print(f"#### Word Lengths Path {WORD_LENGTHS_PATH} ####")
+    word_lengths = FrequencyData(WORD_LENGTHS_PATH)
+
+    print("#### Generating output ####")
     output=[]
     for i in range(word_count):
         k=int(random.choices(word_lengths.tokens,weights=word_lengths.weights,k=1)[0]) 
@@ -51,6 +54,9 @@ def generate_string(uniform=False,word_count=5) -> str:
         else:   
             output.append(''.join(random.choices(letters.tokens, weights=letters.weights,k=k)))
     output=' '.join(output)
+
+    print(f"#### Output {output} ####")
+
     return output
 
 def run(response, answer, params: Params) -> Result:
@@ -58,5 +64,7 @@ def run(response, answer, params: Params) -> Result:
     word_count = params.get("word_count", 10)
     if word_count == "random":
         word_count = random.randint(3,15)
+
+    print("### Generating String ####")
     output = generate_string(uniform=params.get("uniform", False),word_count=word_count)
     return Result(is_correct=is_correct,feedback_items=[("general",output)])
