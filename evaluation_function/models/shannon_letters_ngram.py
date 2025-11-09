@@ -111,7 +111,7 @@ def run(response, answer, params:Params) -> Result:
 
     # === SINGLE MODE ===
     if mode == "single":
-        prefix = params.get("context", "he").upper()
+        prefix = params.get("response", "he").upper()
         top5 = generate_single_letter(lookups, context_window, prefix)
         if not top5:
             feedback = f"No data found for prefix '{prefix}' and n={context_window}."
