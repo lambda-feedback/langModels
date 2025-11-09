@@ -19,8 +19,9 @@ priority = "explicit"
 python = ">=3.11,<3.14"
 
 # Uncomment below and comment out cpu if using macOS, the marker feature does not work (at least on my machine) - MM
-#torch = { version = "^2.9.0" }
-torch = { version = "^2.8.0+cpu", source = "pytorch-cpu" }
+torch = { version = "^2.9.0" }
+#torch = { version = "^2.8.0+cpu", source = "pytorch-cpu" }
+
 
 typing_extensions = "^4.15.0"
 lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", branch = "main", extras = [

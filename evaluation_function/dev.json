@@ -16,8 +16,10 @@
     "response": 6,
     "answer": 800,
     "model": "shannon_letters_ngram",
+    "mode": "single",
     "word_count": "random",
-    "context_window": 5
+    "context": "ate",
+    "context_window": 3
   },
   "shannon_words_build": {
     "response": "the general sweetness",
@@ -30,7 +32,7 @@
     "response": "the general sweetness",
     "answer": 2,
     "model": "shannon_words_ngram",
-    "word_count": 12,
+    "word_count": 10,
     "context_window": 3,
     "dev": true
   },

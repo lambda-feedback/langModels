@@ -49,8 +49,9 @@ def sample_ngram(lookups, n, prefix="", k=1):
     return random.choices(data["keys"], weights=data["freqs"], k=k)
 
 
-def generate_word(N,n) -> str: # N = max letters, n = context window (as in, n-gram)
-    lookups = read_multingram_csv(LETTERS_PATH)
+def generate_word(lookups, N,n, printing=0) -> str: # N = max letters, n = context window (as in, n-gram)
+    """Generate a random word using n-gram model up to N letters."""
+    #lookups = read_multingram_csv(LETTERS_PATH)
     N_max=N
     samples = {}
     samples[1] = sample_ngram(lookups, n=1, prefix="", k=1)[0]
@@ -77,33 +78,75 @@ def generate_word(N,n) -> str: # N = max letters, n = context window (as in, n-g
 
     return samples[N_max]
 
-def run(response, answer, params:Params) -> Result:
-    output=[]
+def generate_single_letter(lookups, n, prefix="") -> list:
+    """Return top 5 most probable next letters for a given prefix."""
+    # Auto-trim prefix if too long
+    expected_prefix_len = max(0, n - 1)
+    if len(prefix) > expected_prefix_len:
+        prefix = prefix[-expected_prefix_len:]  # keep last n-1 chars
+    print(prefix)
+    print(prefix in lookups.get(n, {}))
+    if prefix not in lookups.get(n, {}):
+        return []
 
+    data = lookups[n][prefix]
+    freqs = data["freqs"]
+    keys = data["keys"]
+    total = sum(freqs)
+    probs = [f / total for f in freqs]
+
+    pairs = sorted(zip(keys, probs), key=lambda x: x[1], reverse=True)
+    return pairs[:5]
+
+def run(response, answer, params:Params) -> Result:
+    mode = params.get("mode", "production")
+    context_window = params.get("context_window", 3)
+    printing = params.get("printing", 0)
+
+    if printing:
+        print("#### Reading n-gram data ####")
+    lookups = read_multingram_csv(LETTERS_PATH)
+
+    result = Result(True)
+
+    # === SINGLE MODE ===
+    if mode == "single":
+        prefix = params.get("context", "he").upper()
+        top5 = generate_single_letter(lookups, context_window, prefix)
+        if not top5:
+            feedback = f"No data found for prefix '{prefix}' and n={context_window}."
+        else:
+            feedback_lines = []
+            for k, p in top5:
+                feedback_lines.append(f"{k[:-1]} | {k[-1]} - {p:.0%}")
+            feedback = "<br>".join(feedback_lines)
+
+        result.add_feedback("general", feedback)
+        return result
+    
+    # === PRODUCTION MODE ===
     print("#### Getting data ####")
     data = csv_to_lists(WORD_LENGTHS_PATH)
 
     print("#### Generating word lengths ####")
-    word_lengths = {}
-    word_lengths["tokens"] = [row[0] for row in data]
-    word_lengths["weights"] = [row[1] for row in data]
+    word_lengths = {
+        "tokens": [row[0] for row in data],
+        "weights": [row[1] for row in data],
+    }
 
-    print("#### Getting context window ####")
     word_count = params.get("word_count", 10)
     response_used = isinstance(response, int) and response > 1
-    context_window = response if response_used else params.get("context_window", 3)
 
     if word_count == "random":
         word_count = random.randint(3,15)
 
     print("#### Getting output ####")
-    for i in range(word_count):
+    output=[]
+    for _ in range(word_count):
         k=int(random.choices(word_lengths["tokens"],weights=word_lengths["weights"],k=1)[0]) 
-        output.append(generate_word(k,context_window))
+        output.append(generate_word(lookups,k,context_window))
 
     print("#### Generating Feedback ####")
-
-    result = Result(True)
     preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
     result.add_feedback("general", preface + ' '.join(output))
     if response_used:

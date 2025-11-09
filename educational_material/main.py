@@ -25,6 +25,26 @@ def plot_letter_histogram(show_plots: bool=False, media_dir: Path=None):
     else:
         print(f"Plot saved to {out_path}.")  
 
+def plot_wordlength_histogram(show_plots: bool=False, media_dir: Path=None):
+    """Plot a histogram from norvig_word_frequencies.csv."""
+    csv_path = Path(__file__).parent.parent / "evaluation_function" / "models" / "storage" / "norvig_word_frequencies.csv"
+    df = pd.read_csv(csv_path)
+
+    df = df.sort_values(by="Percent", ascending=False)
+
+    plt.bar(df["wordLength"], df["Percent"], color="skyblue", edgecolor="black")
+    plt.xlabel("Word length")
+    plt.ylabel("Frequency")
+    plt.tight_layout()
+
+    out_path = media_dir / "word_histogram.png"
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    if show_plots:
+        print(f"Plot saved to {out_path}, displaying plot now.")
+        plt.show()
+    else:
+        print(f"Plot saved to {out_path}.")  
+
 def plot_neural_network_results(show_plots: bool=False, media_dir: Path=None):
     """Plot the results of a neural network model against the data.
 
@@ -70,5 +90,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     media_dir = Path(__file__).parent / "media"
     media_dir.mkdir(exist_ok=True)
+    #plot_letter_histogram(show_plots=args.show_plots, media_dir=media_dir)
+    plot_wordlength_histogram(show_plots=args.show_plots, media_dir=media_dir)
     #plot_neural_network_results(show_plots=args.show_plots, media_dir=media_dir)
-    plot_letter_histogram(show_plots=args.show_plots, media_dir=media_dir)
+    
