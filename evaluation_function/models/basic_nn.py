@@ -96,7 +96,7 @@ def run(response, answer, params: Params) -> Result:
     y_true = f(torch.tensor([[float(response)]])).item()
     diff = abs(y_pred - y_true)
     is_correct=diff < absolute_tolerance
-    return Result(is_correct=is_correct,feedback_items=[("general",f"Model({response}) = {y_pred:.4f}, f({response}) = {y_true:.4f} (this is the 'true' value), Diff = {diff:.4f} (tolerance {absolute_tolerance}). Valid model: {is_correct}")])
+    return Result(is_correct=is_correct,feedback_items=[("general",f"Model({response}) = {y_pred:.4f},<br>f({response}) = {y_true:.4f} (this is the 'true' value),<br>Diff = {diff:.4f} (tolerance {absolute_tolerance}).<br>Valid model: {is_correct}")])
 
 # --- runnable code only executes if script is run directly ---
 
