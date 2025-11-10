@@ -111,7 +111,12 @@ def run(response, answer, params:Params) -> Result:
 
     # === SINGLE MODE ===
     if mode == "single":
-        prefix = params.get("response", "he").upper()
+        if isinstance(response, str):
+            prefix = response.upper()
+        elif isinstance(params.get("response"), str):
+            prefix = params["response"].upper() #<- hack for Shimmy
+        else:
+            prefix = "ELUCIDATE"
         top5 = generate_single_letter(lookups, context_window, prefix)
         if not top5:
             feedback = f"No data found for prefix '{prefix}' and n={context_window}."
