@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: |
-          poetry install  --no-interaction --no-root
+          poetry install  --with dev --no-interaction --no-root
 
       # TODO: add linting / black / flake8
       # - name: Lint with flake8
