@@ -1,5 +1,7 @@
-# YourFunctionName
-*Brief description of what this evaluation function does, from the developer perspective*
+# langModels
+An evaluation function to aid the learning of language models.
+
+**NOTE: **  All AWS deployments should allocate 1024MB RAM and Storage due to the image size.
 
 ## Inputs
 *Specific input parameters which can be supplied when the `eval` command is supplied to this function.*
