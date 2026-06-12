@@ -26,7 +26,7 @@ on:
         type: string
         description: "Max concurrent requests (lower for GPT-backed functions)"
         required: false
-        default: '5'
+
 
 jobs:
   run-pre-production-tests:

@@ -43,5 +43,5 @@ ENV FUNCTION_COMMAND="python"
 # Args to start the evaluation function with
 ENV FUNCTION_ARGS="-m,evaluation_function.main"
 
-ENV FUNCTION_INTERFACE="file"
+ENV FUNCTION_INTERFACE="rpc"
 ENV LOG_LEVEL="debug"
