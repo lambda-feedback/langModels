@@ -1,4 +1,4 @@
-# landModel 'Evaluation Function'
+# langModels 'Evaluation Function'
 
 A collection of small Language Models, leading up to LLM-like behaviour and then calling external LLMs. The purpose of the function is to provide interactive learning materials about language models (a.k.a. 'AI'). Primarily designed to interact with [Lambda Feedback](https://www.lambdafeedback.com), the code is public so can be used for other purposes.
 
