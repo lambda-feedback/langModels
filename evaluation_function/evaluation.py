@@ -1,7 +1,9 @@
 from typing import Any
+import importlib
+
 from lf_toolkit.evaluation import Result, Params
 
-from . import models
+from .models import AVAILABLE_MODELS
 
 def evaluation_function(
     response: Any,
@@ -37,10 +39,12 @@ def evaluation_function(
     print(f"#### Response: {str(response)} ####")
     print(f"#### Answer: {str(answer)} ####")
 
-    try:
-        model = getattr(models, model_name)   # e.g. models.basic_nn
-    except AttributeError:
+    if model_name not in AVAILABLE_MODELS:
         raise ValueError(f"Unknown model: {model_name}")
+
+    # Imported here rather than at module load so torch (pulled in by some
+    # models) is only imported when a request actually needs it.
+    model = importlib.import_module(f"{__package__}.models.{model_name}")
 
     if not hasattr(model, "run"):
         raise ValueError(f"Model {model_name} has no run()")
