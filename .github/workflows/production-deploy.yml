@@ -38,6 +38,10 @@ jobs:
     with:
       template-repository-name: 'lambda-feedback/evaluation-function-boilerplate-python'
       environment: "production"
+      # LFS-tracked assets (*.mdb n-gram shards, bengio_model.pt) must be
+      # checked out for real, not as pointer files, or shannon_words_ngram
+      # and bengio_infer fail at runtime.
+      lfs: true
       version-bump: ${{ inputs.version-bump }}
       branch: ${{ inputs.branch }}
       run-database-tests: false

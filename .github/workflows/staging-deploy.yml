@@ -57,7 +57,10 @@ jobs:
       template-repository-name: "lambda-feedback/evaluation-function-boilerplate-python"
       build-platforms: "aws"
       environment: "staging"
-      lfs: false
+      # LFS-tracked assets (*.mdb n-gram shards, bengio_model.pt) must be
+      # checked out for real, not as pointer files, or shannon_words_ngram
+      # and bengio_infer fail at runtime.
+      lfs: true
     secrets:
       aws-key-id: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_ID }}
       aws-secret-key: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_SECRET}}
