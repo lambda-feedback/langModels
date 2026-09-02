@@ -1,5 +1,5 @@
 # Inference code for Bengio-style Neural N-gram Language Model
-import json, os
+import json, os, traceback
 
 from evaluation_function.lazy_load import LazyModule
 from evaluation_function.models.utils import NeuralLM
@@ -15,8 +15,12 @@ def predict_next(context_words, topk=5, model=None,config=None, sp=None, device=
     UNK = sp.unk_id()
     with torch.no_grad():
         ctx_ids = encode(context_words[-N:])
+        # Re-encoding N word pieces can yield more or fewer than N subword
+        # tokens; the model's first layer needs exactly N.
         if len(ctx_ids) < N:
             ctx_ids = [UNK] * (N - len(ctx_ids)) + ctx_ids
+        else:
+            ctx_ids = ctx_ids[-N:]
         x = torch.tensor([ctx_ids], dtype=torch.long, device=device)
         logits = model(x)
         probs = torch.softmax(logits, dim=-1).squeeze()
@@ -36,6 +40,24 @@ def complete(prompt, steps=10,model=None,config=None,sp=None,device=None):
     return sp.decode(words)
 
 def run(response, answer, params: Params) -> Result:
+    # Guard the whole load+infer path: a missing/corrupt model asset (e.g. an
+    # un-fetched Git LFS pointer) must degrade this one request, not raise out
+    # of the worker and take down the RPC loop for every following request.
+    try:
+        return _run_inference(response, params)
+    except Exception as e:
+        print("### bengio_infer failed ###")
+        traceback.print_exc()
+        return Result(
+            is_correct=False,
+            feedback_items=[
+                ("general", "Could not run the Bengio n-gram language model."),
+                ("error", str(e)),
+            ],
+        )
+
+
+def _run_inference(response, params: Params) -> Result:
     print("### Loading Bengio-style Neural N-gram Language Model for inference... ###")
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
