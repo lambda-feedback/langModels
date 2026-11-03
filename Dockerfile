@@ -44,7 +44,14 @@ ENV FUNCTION_COMMAND="python"
 ENV FUNCTION_ARGS="-m,evaluation_function.main"
 
 ENV FUNCTION_INTERFACE="rpc"
-ENV FUNCTION_RPC_TRANSPORT="stdio"
+
+# Use an IPC socket, not stdio. With stdio the RPC frames share stdout with the
+# model code's print() calls; once Python's stdout buffer flushes that text
+# into the stream, shimmy loses framing and every later request times out
+# (FUNCTION_TIMEOUT after FUNCTION_WORKER_SEND_TIMEOUT). The worker starts in
+# ~0.3 s because models (and torch) are imported lazily, so ipc's wait for the
+# socket during Lambda init is not a problem here.
+ENV FUNCTION_RPC_TRANSPORT="ipc"
 
 # The worker pulls in torch on its first request; on a small (1024 MB) Lambda
 # that cold-start import runs ~30-40s. Give shimmy room to wait for it instead

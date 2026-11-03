@@ -29,3 +29,29 @@ An evaluation function to aid the learning of language models.
   }
 }
 ```
+## Stress testing
+
+`scripts/stress_test.py` load-tests a deployed `/evaluate` endpoint. It uses the
+response areas in a set export (default `set_Context_engineering/`), so the requests
+use the same models and `gradeParams` that students trigger. It only needs the
+standard library.
+
+```bash
+# Print the request bodies built from the set, without sending anything
+python3 scripts/stress_test.py --dry-run
+
+# 200 requests at concurrency 10 against staging (the default URL)
+python3 scripts/stress_test.py --requests 200 --concurrency 10
+
+# Step up the concurrency, 30s per stage, and save per-request results
+python3 scripts/stress_test.py --ramp 1,5,10,25,50 --duration 30 --out results.csv
+
+# Only one model, against another endpoint
+python3 scripts/stress_test.py --model bengio_infer --url https://.../evaluate
+```
+
+Each run starts with a sequential warm-up pass, one request per case, so cold starts
+are reported apart from the load stages. Each stage reports success rate and
+min/p50/p90/p95/p99/max latency per model, plus throughput, and groups failures by
+type (`http_<code>`, `timeout`, `conn_error`, `error_in_body`, `bad_json`). The exit
+code is non-zero if any request failed.
