@@ -35,11 +35,9 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 # /tmp, the only writable path on Lambda.
 ENV GPT2_MODEL_DIR=/app/hf_models/gpt2 \
     HF_HOME=/tmp/hf
-RUN HF_HOME=/tmp/hf_build python -c "\
-from transformers import AutoTokenizer, AutoModelForCausalLM; \
-AutoTokenizer.from_pretrained('gpt2').save_pretrained('${GPT2_MODEL_DIR}'); \
-AutoModelForCausalLM.from_pretrained('gpt2', use_safetensors=True).save_pretrained('${GPT2_MODEL_DIR}')" && \
-    rm -rf /tmp/hf_build
+COPY scripts/download_gpt2.py /tmp/download_gpt2.py
+RUN HF_HOME=/tmp/hf_build python /tmp/download_gpt2.py "${GPT2_MODEL_DIR}" && \
+    rm -rf /tmp/hf_build /tmp/download_gpt2.py
 
 # Copy evaluation function first (smaller, changes more often)
 COPY evaluation_function ./evaluation_function
