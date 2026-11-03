@@ -30,6 +30,17 @@ ENV VIRTUAL_ENV=/app/.venv \
 # Copy the cleaned virtual environment
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
+# Bake the pre-trained GPT-2 weights into the image so gpt2_infer needs no
+# network access at runtime. HF_HOME points any runtime fallback download at
+# /tmp, the only writable path on Lambda.
+ENV GPT2_MODEL_DIR=/app/hf_models/gpt2 \
+    HF_HOME=/tmp/hf
+RUN HF_HOME=/tmp/hf_build python -c "\
+from transformers import AutoTokenizer, AutoModelForCausalLM; \
+AutoTokenizer.from_pretrained('gpt2').save_pretrained('${GPT2_MODEL_DIR}'); \
+AutoModelForCausalLM.from_pretrained('gpt2', use_safetensors=True).save_pretrained('${GPT2_MODEL_DIR}')" && \
+    rm -rf /tmp/hf_build
+
 # Copy evaluation function first (smaller, changes more often)
 COPY evaluation_function ./evaluation_function
 

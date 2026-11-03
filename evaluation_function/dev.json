@@ -50,5 +50,13 @@
     "word_count": 12,
     "context_window": 3,
     "dev": true
+  },
+  "gpt2_infer": {
+    "response": "the general sweetness",
+    "answer": 0,
+    "model": "gpt2_infer",
+    "word_count": 20,
+    "temperature": 1.0,
+    "top_k": 50
   }
 }

@@ -1,4 +1,6 @@
+import os
 import unittest
+from unittest import mock
 
 from .evaluation import Params, evaluation_function
 
@@ -36,3 +38,28 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertIsInstance(feedback[0][1], str)
         else:
             self.assertIsInstance(feedback, str)
+
+
+class TestGPT2(unittest.TestCase):
+    """GPT-2 tests. The happy path needs the weights (baked into the image, or a
+    ~500MB Hugging Face download), so it only runs when RUN_GPT2_TESTS is set."""
+
+    @unittest.skipUnless(os.environ.get("RUN_GPT2_TESTS"), "set RUN_GPT2_TESTS=1 to run")
+    def test_generates_continuation(self):
+        prompt = "Once upon a time"
+        result = evaluation_function(
+            prompt, None, {"model": "gpt2_infer", "word_count": 5, "seed": 0}
+        ).to_dict()
+        self.assertTrue(result.get("is_correct"))
+        self.assertTrue(result["feedback"].startswith(prompt))
+        self.assertGreater(len(result["feedback"]), len(prompt))
+
+    def test_load_failure_returns_error_result(self):
+        from .models import gpt2_infer
+
+        with mock.patch.object(gpt2_infer, "_load", side_effect=OSError("no weights")):
+            result = evaluation_function(
+                "hello", None, {"model": "gpt2_infer"}
+            ).to_dict()
+        self.assertFalse(result.get("is_correct"))
+        self.assertIn("no weights", str(result.get("feedback")))

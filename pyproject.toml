@@ -29,6 +29,7 @@ lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", ta
 numpy = "^2.3.4"
 lmdb = "^1.7.5"
 sentencepiece = "^0.2.1"
+transformers = "^4.57"
 
 [tool.poetry.group.overrides.dependencies]
 # Override sympy because lf-toolkit pins sympy==1.12, 
