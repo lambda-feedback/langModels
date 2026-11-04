@@ -40,12 +40,12 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertIsInstance(feedback, str)
 
 
-class TestGPT2(unittest.TestCase):
-    """GPT-2 tests. The happy path needs the weights (baked into the image, or a
-    ~500MB Hugging Face download), so it only runs when RUN_GPT2_TESTS is set."""
+class TestHFModels(unittest.TestCase):
+    """GPT-2 and SmolLM2 tests. Generation needs the weights (baked into the image,
+    or ~500MB Hugging Face downloads each), so it only runs when RUN_HF_MODEL_TESTS is set."""
 
-    @unittest.skipUnless(os.environ.get("RUN_GPT2_TESTS"), "set RUN_GPT2_TESTS=1 to run")
-    def test_generates_continuation(self):
+    @unittest.skipUnless(os.environ.get("RUN_HF_MODEL_TESTS"), "set RUN_HF_MODEL_TESTS=1 to run")
+    def test_gpt2_continues_prompt(self):
         prompt = "Once upon a time"
         result = evaluation_function(
             prompt, None, {"model": "gpt2_infer", "word_count": 5, "seed": 0}
@@ -54,12 +54,31 @@ class TestGPT2(unittest.TestCase):
         self.assertTrue(result["feedback"].startswith(prompt))
         self.assertGreater(len(result["feedback"]), len(prompt))
 
-    def test_load_failure_returns_error_result(self):
-        from .models import gpt2_infer
+    @unittest.skipUnless(os.environ.get("RUN_HF_MODEL_TESTS"), "set RUN_HF_MODEL_TESTS=1 to run")
+    def test_smollm2_replies_without_prompt(self):
+        prompt = "What is the capital of France?"
+        result = evaluation_function(
+            prompt, None, {"model": "smollm2_infer", "word_count": 20, "seed": 0}
+        ).to_dict()
+        self.assertTrue(result.get("is_correct"))
+        self.assertTrue(result["feedback"])
+        self.assertNotIn(prompt, result["feedback"])
+        self.assertNotIn("<|im_", result["feedback"])
 
-        with mock.patch.object(gpt2_infer.MODEL, "load", side_effect=OSError("no weights")):
-            result = evaluation_function(
-                "hello", None, {"model": "gpt2_infer"}
-            ).to_dict()
-        self.assertFalse(result.get("is_correct"))
-        self.assertIn("no weights", str(result.get("feedback")))
+    def test_top_k_clamped_to_vocab(self):
+        from .models import gpt2_infer, smollm2_infer
+        from .models.hf_lm import sampling_params
+
+        for module, vocab_size in [(gpt2_infer, 50257), (smollm2_infer, 49152)]:
+            sampling = sampling_params({"top_k": 10**9}, module.DEFAULT_TOKENS, module.MAX_TOKENS, module.VOCAB_SIZE)
+            self.assertEqual(sampling["top_k"], vocab_size)
+
+    def test_load_failure_returns_error_result(self):
+        from .models import gpt2_infer, smollm2_infer
+
+        for name, module in [("gpt2_infer", gpt2_infer), ("smollm2_infer", smollm2_infer)]:
+            with self.subTest(model=name), \
+                    mock.patch.object(module.MODEL, "load", side_effect=OSError("no weights")):
+                result = evaluation_function("hello", None, {"model": name}).to_dict()
+                self.assertFalse(result.get("is_correct"))
+                self.assertIn("no weights", str(result.get("feedback")))
