@@ -36,7 +36,11 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 ENV GPT2_MODEL_DIR=/app/hf_models/gpt2 \
     HF_HOME=/tmp/hf
 COPY scripts/download_gpt2.py /tmp/download_gpt2.py
+# safetensors >=0.8 writes model.safetensors via a tempfile+rename, leaving it
+# mode 0600 (root-only). Lambda runs as a non-root user, so open() fails (and
+# safetensors reports that as "No such file or directory"). Make it readable.
 RUN HF_HOME=/tmp/hf_build python /tmp/download_gpt2.py "${GPT2_MODEL_DIR}" && \
+    chmod -R a+rX "${GPT2_MODEL_DIR}" && \
     rm -rf /tmp/hf_build /tmp/download_gpt2.py
 
 # Copy evaluation function first (smaller, changes more often)
