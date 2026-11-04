@@ -11,6 +11,7 @@ AVAILABLE_MODELS = [
     "shannon_letters_ngram",
     "shannon_words_ngram",
     "bengio_infer",
+    "gpt2_infer",
 ]
 
 __all__ = ["AVAILABLE_MODELS"]

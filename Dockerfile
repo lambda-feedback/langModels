@@ -30,6 +30,15 @@ ENV VIRTUAL_ENV=/app/.venv \
 # Copy the cleaned virtual environment
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
+# Bake the pre-trained GPT-2 weights into the image so gpt2_infer needs no
+# network access at runtime. HF_HOME points any runtime fallback download at
+# /tmp, the only writable path on Lambda.
+ENV GPT2_MODEL_DIR=/app/hf_models/gpt2 \
+    HF_HOME=/tmp/hf
+COPY scripts/download_gpt2.py /tmp/download_gpt2.py
+RUN HF_HOME=/tmp/hf_build python /tmp/download_gpt2.py "${GPT2_MODEL_DIR}" && \
+    rm -rf /tmp/hf_build /tmp/download_gpt2.py
+
 # Copy evaluation function first (smaller, changes more often)
 COPY evaluation_function ./evaluation_function
 
