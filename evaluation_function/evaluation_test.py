@@ -57,7 +57,7 @@ class TestGPT2(unittest.TestCase):
     def test_load_failure_returns_error_result(self):
         from .models import gpt2_infer
 
-        with mock.patch.object(gpt2_infer, "_load", side_effect=OSError("no weights")):
+        with mock.patch.object(gpt2_infer.MODEL, "load", side_effect=OSError("no weights")):
             result = evaluation_function(
                 "hello", None, {"model": "gpt2_infer"}
             ).to_dict()

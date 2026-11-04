@@ -11,7 +11,7 @@ The parameters for each model are documented for teachers in `user.md`.
 ## Models: build and runtime notes
 
 ### `gpt2_infer`
-- `scripts/download_gpt2.py` downloads the weights into the image during `docker build`. They go to `GPT2_MODEL_DIR` (`/app/hf_models/gpt2`), so nothing is fetched at runtime.
+- `scripts/download_hf_model.py` downloads the weights into the image during `docker build`. They go to `GPT2_MODEL_DIR` (`/app/hf_models/gpt2`), so nothing is fetched at runtime.
 - Locally, the weights download on first use into `HF_HOME` (default `/tmp/hf`).
 - The test that does a real download and generation is skipped unless `RUN_GPT2_TESTS=1` is set, so CI doesn't download about 500MB.
 - Memory: see the note above (2048MB minimum).
