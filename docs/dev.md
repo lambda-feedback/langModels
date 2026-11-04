@@ -1,22 +1,20 @@
 # langModels
 An evaluation function to aid the learning of language models.
 
-**NOTE: **  All AWS deployments should allocate 1024MB RAM and Storage due to the image size.
+**NOTE:** AWS deployments need at least 2048MB RAM, and storage to match the ~3.4GB image. GPT-2 (`gpt2_infer`) peaks near 1GB in the Python process alone, so 1024MB is no longer enough.
 
 ## Inputs
 *Specific input parameters which can be supplied when the `eval` command is supplied to this function.*
 
+The parameters for each model are documented for teachers in `user.md`.
+
+## Models: build and runtime notes
+
 ### `gpt2_infer`
-Pre-trained GPT-2 (124M) from Hugging Face. The student's `response` is the prompt; the sampled continuation is returned as `general` feedback.
-
-| Param | Default | Notes |
-|---|---|---|
-| `word_count` | 20 | New tokens to generate (1–100) |
-| `temperature` | 1.0 | Sampling temperature |
-| `top_k` | 50 | Sample from the k most likely tokens |
-| `seed` | none | Integer for reproducible output |
-
-Weights are baked into the image at `GPT2_MODEL_DIR` during `docker build`. Locally, they are downloaded on first use into `HF_HOME` (default `/tmp/hf`). GPT-2 plus torch needs roughly 1–1.5 GB of RAM, so give the Lambda at least 2048MB if this model is enabled.
+- `scripts/download_gpt2.py` downloads the weights into the image during `docker build`. They go to `GPT2_MODEL_DIR` (`/app/hf_models/gpt2`), so nothing is fetched at runtime.
+- Locally, the weights download on first use into `HF_HOME` (default `/tmp/hf`).
+- The test that does a real download and generation is skipped unless `RUN_GPT2_TESTS=1` is set, so CI doesn't download about 500MB.
+- Memory: see the note above (2048MB minimum).
 
 ## Outputs
 *Output schema/values for this function*
