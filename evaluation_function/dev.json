@@ -13,7 +13,7 @@
     "word_count": "random"
   },
   "shannon_letters_ngram": {
-    "response": "ate",
+    "response": "well",
     "answer": 800,
     "model": "shannon_letters_ngram",
     "mode": "single",

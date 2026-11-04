@@ -1,0 +1,95 @@
+digraph {
+	nodesep=0.6 ordering=out rankdir=LR ranksep=0.8 splines=line
+	node [fontname=Helvetica shape=plain]
+	x [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><B>x</B></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	y [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><B>y</B></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	o [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><B>out</B></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h0 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><I>v<sub>0</sub></I> tanh(<I>w<sub>0</sub>x+u<sub>0</sub>y+b<sub>0</sub></I>)+<I>c</I></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h1 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><I>v<sub>1</sub></I> tanh(<I>w<sub>1</sub>x+u<sub>1</sub>y+b<sub>1</sub></I>)+<I>c</I></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h2 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><I>v<sub>2</sub></I> tanh(<I>w<sub>2</sub>x+u<sub>2</sub>y+b<sub>2</sub></I>)+<I>c</I></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h3 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="white" BGCOLOR="white">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><FONT POINT-SIZE="24">⋮</FONT></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h4 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><I>v<sub>13</sub></I> tanh(<I>w<sub>13</sub>x+u<sub>13</sub>y+b<sub>13</sub></I>)+<I>c</I></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h5 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><I>v<sub>14</sub></I> tanh(<I>w<sub>14</sub>x+u<sub>14</sub>y+b<sub>14</sub></I>)+<I>c</I></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	h6 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" STYLE="rounded" COLOR="black" BGCOLOR="lightblue">
+                     <TR>
+                       <TD PORT="in" WIDTH="8"></TD>
+                       <TD BORDER="0" ALIGN="CENTER" FIXEDSIZE="FALSE" CELLPADDING="6"><I>v<sub>15</sub></I> tanh(<I>w<sub>15</sub>x+u<sub>15</sub>y+b<sub>15</sub></I>)+<I>c</I></TD>
+                       <TD PORT="out" WIDTH="8"></TD>
+                     </TR>
+                   </TABLE>>]
+	x:out -> h0:in [color=black]
+	y:out -> h0:in [color=black]
+	h0:out -> o:in [color=black]
+	x:out -> h1:in [color=black]
+	y:out -> h1:in [color=black]
+	h1:out -> o:in [color=black]
+	x:out -> h2:in [color=black]
+	y:out -> h2:in [color=black]
+	h2:out -> o:in [color=black]
+	x:out -> h3:in [color=white]
+	y:out -> h3:in [color=white]
+	h3:out -> o:in [color=white]
+	x:out -> h4:in [color=black]
+	y:out -> h4:in [color=black]
+	h4:out -> o:in [color=black]
+	x:out -> h5:in [color=black]
+	y:out -> h5:in [color=black]
+	h5:out -> o:in [color=black]
+	x:out -> h6:in [color=black]
+	y:out -> h6:in [color=black]
+	h6:out -> o:in [color=black]
+}

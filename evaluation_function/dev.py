@@ -36,7 +36,7 @@ def dev():
     response = config.pop("response")
     params = Params(**config)
 
-    result = evaluation_function(answer, response, params)
+    result = evaluation_function(response, answer, params)
     print(result)
     print(result.to_dict())
 
