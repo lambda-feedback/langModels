@@ -125,3 +125,19 @@ Built from Paris - France, Berlin - Germany, Rome - Italy, Tokyo - Japan, Madrid
 | GPT-2 | raw | 5/5 | - |
 | SmolLM2 | centred | 5/5 | - |
 | SmolLM2 | raw | 5/5 | - |
+
+### How spread out the directions are
+
+Each unit-length direction (centred) over the model's coordinates. If one coordinate carried the concept, it would be near 1 and the rest near 0.
+
+| direction | model | dims | coords near zero (abs < 0.01) | coords for 90% of length | largest coord | even spread would be |
+|---|---|---|---|---|---|---|
+| plural | Bengio | 64 | 8% | 29 (45%) | 0.28 | 0.125 |
+| plural | GPT-2 | 768 | 24% | 300 (39%) | 0.28 | 0.036 |
+| plural | SmolLM2 | 576 | 19% | 251 (44%) | 0.15 | 0.042 |
+| gender | Bengio | 64 | 11% | 31 (48%) | 0.33 | 0.125 |
+| gender | GPT-2 | 768 | 27% | 305 (40%) | 0.13 | 0.036 |
+| gender | SmolLM2 | 576 | 17% | 259 (45%) | 0.14 | 0.042 |
+| country → capital | Bengio | 64 | 2% | 29 (45%) | 0.37 | 0.125 |
+| country → capital | GPT-2 | 768 | 26% | 321 (42%) | 0.13 | 0.036 |
+| country → capital | SmolLM2 | 576 | 20% | 246 (43%) | 0.12 | 0.042 |

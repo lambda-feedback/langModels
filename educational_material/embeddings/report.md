@@ -40,6 +40,22 @@ The baseline column is worth knowing about when choosing examples. For plurals, 
 
 **Directions** (built from five pairs, tested on held-out pairs): GPT-2 and SmolLM2 order every held-out pair correctly for plural, gender and country → capital. Bengio scores 2/5 for plural and 1/4 for gender, which is chance.
 
+## A concept is a direction, not an axis
+
+Each word is a point in a space with 64 dimensions (Bengio), 768 (GPT-2) or 576 (SmolLM2). The gender direction above is not one of those dimensions. It is the average of woman − man, she − he, girl − boy and so on, scaled to length 1, so it points diagonally through the space and uses nearly every coordinate a little:
+
+| gender direction | Bengio | GPT-2 | SmolLM2 |
+|---|---|---|---|
+| dimensions | 64 | 768 | 576 |
+| coordinates near zero (abs < 0.01) | 11% | 27% | 17% |
+| coordinates needed for 90% of its length | 31 (48%) | 305 (40%) | 259 (45%) |
+| largest single coordinate | 0.33 | 0.13 | 0.14 |
+| each coordinate if spread perfectly evenly | 0.125 | 0.036 | 0.042 |
+
+The plural and capital directions look the same (see `results.md`). Training gives no reason for the axes to line up with concepts, so there is no "gender coordinate". Meaning lives in combinations of many coordinates. Measuring a word against a concept is just a dot product: the word's unit vector · the direction gives one number, how far along that concept the word sits. That number is the x-axis in the direction-view plots. A 768-dimensional space has room for very many such directions at once, each nearly at right angles to the others.
+
+For students, one sentence covers it: a word is a point in 768-D space, and a concept is a direction through that space, not one of its axes.
+
 ## Method notes
 
 - **Whole-word tokens only.** Each word is looked up as a single token: "Ġking" (a leading space) in GPT-2 and SmolLM2, which share this convention, and "▁king" in Bengio's SentencePiece vocabulary. Bengio's text was lowercased, so it uses "paris" rather than "Paris". Neighbour searches consider whole-word tokens only, and exclude the input words and their case variants (" King" after " king").
