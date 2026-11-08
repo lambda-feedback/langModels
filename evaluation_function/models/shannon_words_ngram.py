@@ -103,7 +103,7 @@ def run(response, answer, params:Params) -> Result:
         }
 
     result = Result(True)
-    preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
+    preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: \n'
     result.add_feedback("general", preface + ' '.join(output).replace("</s>", "").replace("<s>", "").strip())
 
     return result

@@ -124,7 +124,7 @@ def run(response, answer, params:Params) -> Result:
             feedback_lines = []
             for k, p in top5:
                 feedback_lines.append(f"{k[:-1]} | {k[-1]} - {p:.0%}")
-            feedback = "<br>".join(feedback_lines)
+            feedback = "  \n".join(feedback_lines)
 
         result.add_feedback("general", feedback)
         return result
@@ -152,7 +152,7 @@ def run(response, answer, params:Params) -> Result:
         output.append(generate_word(lookups,k,context_window))
 
     print("#### Generating Feedback ####")
-    preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: <br>'
+    preface = 'Context window: '+str(context_window)+', Word count: '+str(word_count)+'. Output: \n'
     result.add_feedback("general", preface + ' '.join(output))
     if response_used:
         result.add_feedback("general", "| Answer not an integer >1; used default context window") if not response_used else None
