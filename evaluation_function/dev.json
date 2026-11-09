@@ -58,5 +58,13 @@
     "word_count": 20,
     "temperature": 1.0,
     "top_k": 50
+  },
+  "smollm2_infer": {
+    "response": "What is a language model?",
+    "answer": 0,
+    "model": "smollm2_infer",
+    "word_count": 64,
+    "temperature": 1.0,
+    "top_k": 50
   }
 }

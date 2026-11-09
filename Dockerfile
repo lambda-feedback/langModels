@@ -30,18 +30,25 @@ ENV VIRTUAL_ENV=/app/.venv \
 # Copy the cleaned virtual environment
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-# Bake the pre-trained GPT-2 weights into the image so gpt2_infer needs no
-# network access at runtime. HF_HOME points any runtime fallback download at
-# /tmp, the only writable path on Lambda.
+# Bake the pre-trained Hugging Face weights (GPT-2 and SmolLM2, ~540MB each in
+# float32) into the image so gpt2_infer and smollm2_infer need no network
+# access at runtime. HF_HOME points any runtime fallback download at /tmp, the
+# only writable path on Lambda.
 ENV GPT2_MODEL_DIR=/app/hf_models/gpt2 \
+    SMOLLM2_MODEL_DIR=/app/hf_models/smollm2-135m-instruct \
     HF_HOME=/tmp/hf
-COPY scripts/download_gpt2.py /tmp/download_gpt2.py
+COPY scripts/download_hf_model.py /tmp/download_hf_model.py
 # safetensors >=0.8 writes model.safetensors via a tempfile+rename, leaving it
 # mode 0600 (root-only). Lambda runs as a non-root user, so open() fails (and
 # safetensors reports that as "No such file or directory"). Make it readable.
-RUN HF_HOME=/tmp/hf_build python /tmp/download_gpt2.py "${GPT2_MODEL_DIR}" && \
+# One layer per model, so changing one does not re-download the other.
+RUN HF_HOME=/tmp/hf_build python /tmp/download_hf_model.py "${GPT2_MODEL_DIR}" --model-id gpt2 && \
     chmod -R a+rX "${GPT2_MODEL_DIR}" && \
-    rm -rf /tmp/hf_build /tmp/download_gpt2.py
+    rm -rf /tmp/hf_build
+RUN HF_HOME=/tmp/hf_build python /tmp/download_hf_model.py "${SMOLLM2_MODEL_DIR}" \
+        --model-id HuggingFaceTB/SmolLM2-135M-Instruct && \
+    chmod -R a+rX "${SMOLLM2_MODEL_DIR}" && \
+    rm -rf /tmp/hf_build /tmp/download_hf_model.py
 
 # Copy evaluation function first (smaller, changes more often)
 COPY evaluation_function ./evaluation_function
