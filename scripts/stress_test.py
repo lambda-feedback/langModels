@@ -88,6 +88,43 @@ def load_cases(set_dir: str, models: list[str] | None) -> list[Case]:
     return cases
 
 
+SYNTHETIC_PROMPTS = {
+    "smollm2_infer": [
+        "What is a language model?",
+        "Explain attention in transformers in one sentence.",
+        "Write a haiku about tokens.",
+        "Why do large language models sometimes make things up?",
+        "What is the difference between a bigram and a trigram?",
+    ],
+}
+
+
+def synthetic_cases(models: list[str], word_counts: list[int]) -> list[Case]:
+    """Cases for models with no response area in the set export, shaped like
+    {"response": prompt, "params": {"model": ..., "word_count": N}}. Case.model
+    carries the length so report() breaks latency down per word_count.
+    Cases interleave lengths so every stage sees a mix."""
+    cases = []
+    for model in models:
+        prompts = SYNTHETIC_PROMPTS.get(model)
+        if not prompts:
+            raise SystemExit(f"no synthetic prompts for {model!r}; known: {', '.join(SYNTHETIC_PROMPTS)}")
+        short = model.removesuffix("_infer")
+        for i, prompt in enumerate(prompts):
+            for wc in word_counts:
+                body = {
+                    "submission": {"type": "OTHER", "format": "", "content": {"value": prompt}},
+                    "task": {"title": f"synthetic {model}", "referenceSolution": {"value": ""}},
+                    "configuration": {"params": {"model": model, "word_count": wc}},
+                }
+                cases.append(Case(
+                    label=f"{short}.w{wc}.p{i}",
+                    model=f"{model}/w{wc}",
+                    body=json.dumps(body).encode(),
+                ))
+    return cases
+
+
 def is_success_body(data) -> bool:
     """The endpoint returns a JSON list of feedback items on success, e.g.
     [{"awardedPoints": 1, "message": "...", ...}]. Also accept the toolkit's
@@ -227,13 +264,23 @@ def main() -> int:
     ap.add_argument("--duration", type=float, help="run each stage for N seconds instead of --requests")
     ap.add_argument("--ramp", help="comma-separated concurrency stages, e.g. 1,5,10,25,50")
     ap.add_argument("--model", action="append", help="only use cases for this model (repeatable)")
+    ap.add_argument("--synthetic", action="append",
+                    help="add built-in prompt cases for a model not in the set export, e.g. smollm2_infer "
+                         "(repeatable; set-export cases are then only included if --model is given)")
+    ap.add_argument("--word-counts", default="16,64,256",
+                    help="word_count values for --synthetic cases (default: 16,64,256)")
     ap.add_argument("--timeout", type=float, default=60, help="per-request timeout in seconds")
     ap.add_argument("--no-warmup", action="store_true", help="skip the sequential warm-up pass")
     ap.add_argument("--dry-run", action="store_true", help="print request bodies and exit")
     ap.add_argument("--out", help="write per-request results to this CSV")
     args = ap.parse_args()
 
-    cases = load_cases(args.set_dir, args.model)
+    cases = []
+    if args.model or not args.synthetic:
+        cases += load_cases(args.set_dir, args.model)
+    if args.synthetic:
+        word_counts = [int(x) for x in args.word_counts.split(",")]
+        cases += synthetic_cases(args.synthetic, word_counts)
     if not cases:
         print(f"No langModels cases found in {args.set_dir}", file=sys.stderr)
         return 1
